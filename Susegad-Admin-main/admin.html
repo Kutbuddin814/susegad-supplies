@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Susegad Supplies</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <img src="./images/susegad logo.jpg" alt="Susegad Supplies Logo" class="header-logo">
+            <h1>Susegad Supplies - Admin Panel</h1>
+        </div>
+        <button id="logout-btn" class="btn btn-logout">Logout</button>
+    </header>
+
+    <main class="container">
+        <div class="admin-layout">
+            <div class="main-content">
+                <section class="card">
+                    <h2>Add New Product</h2>
+                    <form id="add-product-form">
+                        <p class="form-note">This form adds a product with one size/price variation.</p>
+                        <div class="form-grid">
+                            <div class="form-group"><label for="name">Product Name</label><input type="text" id="name" required></div>
+                            <div class="form-group"><label for="description">Description</label><input type="text" id="description" required></div>
+                            <div class="form-group"><label for="size">Size (e.g., 250g, 1 Piece)</label><input type="text" id="size" required></div>
+                            <div class="form-group"><label for="price">Price (₹)</label><input type="number" id="price" required></div>
+                            <div class="form-group"><label for="stock">Stock</label><input type="number" id="stock" value="0" required></div>
+                            <div class="form-group"><label for="imageUrl">Image URL (e.g., /images/new.jpg)</label><input type="text" id="imageUrl" required></div>
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <select id="category" required></select>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="btn btn-primary">Add Product</button>
+                        </div>
+                    </form>
+                </section>
+                 <section class="card">
+                    <h2>Manage Inventory</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="col-name">Product Name</th>
+                                    <th class="col-category">Category</th>
+                                    <th class="col-price">Price (₹)</th>
+                                    <th class="col-stock">Stock</th>
+                                    <th class="col-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+            <div class="sidebar-content">
+                <section class="card">
+                    <h2>Manage Categories</h2>
+                    <form id="add-category-form">
+                        <div class="form-group">
+                            <label for="new-category-name">New Category Name</label>
+                            <input type="text" id="new-category-name" required>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="btn btn-primary">Add Category</button>
+                        </div>
+                    </form>
+                    <hr>
+                    <h3>Existing Categories</h3>
+                    <ul id="category-list">
+                        </ul>
+                </section>
+            </div>
+        </div>
+    </main>
+    <div id="toast-container"></div>
+    <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+/* --- Billing Page Styles --- */
+#billing-page .container {
+    max-width: 900px;
+}
+
+.billing-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.final-review-card, .payment-method-card {
+    background-color: var(--white-color);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+}
+
+.review-section {
+    margin-bottom: 20px;
+}
+.review-section h4 {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.payment-option {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.payment-option:has(input:checked) {
+    background-color: var(--secondary-color);
+    border-color: var(--primary-color);
+}
+.payment-desc {
+    font-size: 0.9rem;
+    color: #777;
+    margin-left: 28px;
+}
+
+.card-payment-form {
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-row-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.confirm-order-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 15px;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 900px) {
+    .billing-layout { grid-template-columns: 1fr; }
+}

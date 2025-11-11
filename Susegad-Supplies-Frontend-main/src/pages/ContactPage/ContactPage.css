@@ -1,0 +1,10 @@
+/* --- Contact Page Styles --- */
+.contact-subtitle { text-align: center; max-width: 600px; margin: -20px auto 50px; font-size: 1.1rem; color: #555; }
+.contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 60px; }
+.contact-card { background-color: var(--white-color); padding: 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
+.contact-icon { background-color: #e9f5e3; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+.contact-icon img { width: 32px; height: 32px; }
+.contact-card h3 { margin-bottom: 10px; color: var(--dark-color); }
+.contact-card p { color: #555; }
+.contact-card a { color: var(--primary-color); font-weight: 500; }
+.contact-map iframe { width: 100%; height: 450px; border-radius: 12px; border: none; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }

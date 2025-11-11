@@ -1,0 +1,195 @@
+/* --- Homepage Specific Styles --- */
+.hero-split {
+    padding: 60px 0;
+    background-color: var(--background-color);
+}
+.hero-container {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+.hero-text {
+    flex: 1.2;
+    text-align: left;
+}
+.hero-text h1 {
+    font-size: 3.2rem;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+.hero-text p {
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin-bottom: 30px;
+    color: #555;
+}
+.search-wrapper {
+    position: relative;
+    max-width: 500px;
+}
+.hero-search {
+    display: flex;
+    margin: 0;
+    width: 100%;
+}
+.hero-search input {
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    border-right: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 50px 0 0 50px;
+    outline: none;
+}
+.hero-search .cta-button {
+    border-radius: 0 50px 50px 0;
+}
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--white-color);
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    z-index: 10;
+    overflow: hidden;
+}
+.suggestion-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-weight: 500;
+}
+.suggestion-item:hover {
+    background-color: var(--secondary-color);
+}
+.popular-searches {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #555;
+}
+.popular-searches a {
+    margin-left: 10px;
+    padding: 5px 12px;
+    background-color: var(--secondary-color);
+    border-radius: 20px;
+    transition: background-color 0.3s;
+}
+.popular-searches a:hover {
+    background-color: #dce9d1;
+}
+.hero-image {
+    flex: 1;
+    text-align: center;
+}
+.hero-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    object-fit: cover;
+    max-height: 400px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+#shop-by-category {
+    background-color: var(--secondary-color);
+}
+.category-grid-home {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+.category-card-home {
+    text-align: center;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.category-card-home:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+.category-card-home img {
+    width: 100%;
+    aspect-ratio: 1 / 1; 
+    object-fit: cover; 
+    display: block;
+}
+.category-card-home span {
+    display: block;
+    padding: 15px 10px;
+    font-weight: 600;
+    background-color: var(--white-color);
+}
+#our-promise {
+    background: var(--white-color);
+}
+#our-promise .container {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    gap: 30px;
+}
+.promise-item h4 {
+    font-size: 1.3rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+#featured-products {
+    background-color: var(--secondary-color);
+}
+#testimonials {
+    background-color: var(--background-color);
+}
+#testimonials h2 {
+    text-align: center;
+    font-size: 2.2rem;
+    margin-bottom: 40px;
+}
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+.testimonial-card {
+    background-color: var(--white-color);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    text-align: center;
+    border-left: 5px solid var(--primary-color);
+    display: flex;
+    flex-direction: column;
+}
+.testimonial-card p {
+    font-style: italic;
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 15px;
+    flex-grow: 1; 
+}
+.testimonial-card span {
+    font-weight: 700;
+    color: var(--dark-color);
+}
+.promo-banner {
+    background-color: var(--secondary-color); 
+    text-align: center;
+    padding: 70px 30px;
+    border-radius: 15px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+.promo-banner h2 {
+    font-size: 2.5rem;
+    color: var(--dark-color);
+    margin-bottom: 15px;
+}
+.promo-banner p {
+    font-size: 1.1rem;
+    color: #444;
+    margin-bottom: 30px;
+}
