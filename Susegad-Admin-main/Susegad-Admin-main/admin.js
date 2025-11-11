@@ -23,7 +23,7 @@
   // Logout
   document.getElementById("logoutBtn").addEventListener("click", ()=>{
     localStorage.removeItem("adminUser");
-    window.location.href = "admin-login.html";
+    window.location.href = "index.html"; // New name
   });
 
   // ---------- PRODUCTS ----------
