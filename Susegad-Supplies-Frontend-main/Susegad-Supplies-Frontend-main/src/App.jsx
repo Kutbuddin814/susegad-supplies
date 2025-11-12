@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
+// CRITICAL STEP: Wrap your entire application in the AppProvider
+import { AppProvider } from "./context/AppContext.jsx";
+
 // ✅ Layout Components
 import Header from "./components/Header/Header.jsx";
 import Footer from "./components/Footer/Footer.jsx";
@@ -20,8 +23,7 @@ import BillingPage from "./pages/BillingPage/BillingPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage/ConfirmationPage.jsx";
 import OrderHistoryPage from "./pages/OrderHistoryPage/OrderHistoryPage.jsx";
 
-function App() {
-
+function AppContent() {
   // ✅ STATE for Login Signup + Cart Sidebar
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
@@ -98,5 +100,13 @@ function App() {
   );
 }
 
-export default App;
+// Wrapper component to provide the context
+function App() {
+    return (
+        <AppProvider>
+            <AppContent />
+        </AppProvider>
+    )
+}
 
+export default App;

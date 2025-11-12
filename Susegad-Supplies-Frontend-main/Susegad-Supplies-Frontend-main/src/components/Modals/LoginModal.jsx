@@ -17,6 +17,7 @@ function LoginModal({ isOpen, onClose, onSwitchToSignup }) {
         setError('');
         setIsLoading(true);
         try {
+            // API_URL is now correctly set to http://localhost:5000
             const res = await fetch(`${API_URL}/shop/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -33,6 +34,7 @@ function LoginModal({ isOpen, onClose, onSwitchToSignup }) {
                 setError(data.message || "Login failed.");
             }
         } catch (err) {
+            // This error handler should now successfully catch connection issues to localhost:5000
             setError("Could not connect to the server.");
         } finally {
             setIsLoading(false);

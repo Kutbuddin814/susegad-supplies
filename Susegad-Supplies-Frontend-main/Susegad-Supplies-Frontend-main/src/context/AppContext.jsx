@@ -3,8 +3,10 @@ import React, { useState, useEffect, createContext, useContext } from "react";
 const AppContext = createContext();
 export const useAppContext = () => useContext(AppContext);
 
-// ✅ Your live backend
-const API_URL = "https://susegad-supplies.onrender.com";
+// Determine the API URL based on environment variables.
+// When running locally with 'npm run dev', VITE_API_BASE_URL (http://localhost:5000) is used.
+// When deployed, this will default to the live backend URL.
+const API_URL = import.meta.env.VITE_API_BASE_URL || "https://susegad-supplies.onrender.com";
 
 /* Small helper to fetch JSON safely */
 async function jsonFetch(url, options = {}) {

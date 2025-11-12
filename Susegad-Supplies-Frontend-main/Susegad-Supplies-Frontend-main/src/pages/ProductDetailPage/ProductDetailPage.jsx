@@ -20,7 +20,8 @@ function ProductDetailPage() {
         const fetchProduct = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`${API_URL}/products/${productId}`);
+                // FIX: Ensure the shop prefix is used here if needed, based on your backend routes
+                const res = await fetch(`${API_URL}/shop/products/${productId}`); 
                 const data = await res.json();
                 setProduct(data);
                 if (data.variations && data.variations.length > 0) {
