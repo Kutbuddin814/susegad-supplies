@@ -14,13 +14,15 @@ export default function adminRoutes(db) {
         return res.status(400).json({ message: "Email and password required" });
       }
 
-      // Try admins first, then users(role=admin)
+      // Check collection fallbacks
       let admin = await db.collection("admins").findOne({ email });
       if (!admin) {
         admin = await db.collection("users").findOne({ email, role: "admin" });
       }
+
       if (!admin) return res.status(400).json({ message: "Invalid credentials" });
 
+      // 🛑 CRITICAL FIX: ENABLE PASSWORD CHECK
       const ok = await bcrypt.compare(password, admin.password || "");
       if (!ok) return res.status(400).json({ message: "Invalid credentials" });
 
@@ -28,7 +30,7 @@ export default function adminRoutes(db) {
         message: "Admin login successful",
         admin: {
           _id: admin._id,
-          name: admin.name,
+          name: admin.name || "Admin User",
           email: admin.email,
           role: admin.role || "admin",
         }
@@ -123,7 +125,7 @@ export default function adminRoutes(db) {
     }
   });
 
-  // -------- ORDERS (read-only here) --------
+  // -------- ORDERS (Read & Update Status) --------
   router.get("/orders", async (_req, res) => {
     try {
       const list = await db.collection("orders").find().sort({ _id: -1 }).toArray();
@@ -133,6 +135,29 @@ export default function adminRoutes(db) {
       res.status(500).json({ message: "Failed to fetch orders" });
     }
   });
+
+  router.put("/orders/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const { status } = req.body;
+
+      if (!status) {
+        return res.status(400).json({ message: "Status field required." });
+      }
+
+      await db.collection("orders").updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status: status } }
+      );
+
+      res.json({ message: "Order status updated successfully" });
+    } catch (e) {
+      console.error("Order status update failed:", e);
+      res.status(500).json({ message: "Failed to update order status." });
+    }
+  });
+
+  // 🛑 Removed the incorrect router.post("/checkout"...) logic.
 
   return router;
 }
