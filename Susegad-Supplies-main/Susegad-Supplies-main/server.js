@@ -9,11 +9,16 @@ dotenv.config();
 
 const app = express();
 
-// CORS: allow your admin + (optional) frontend
+// CORS: allow your admin, frontend, and local development environment
 app.use(cors({
   origin: [
     "https://susegad-admin.onrender.com",
-    "https://susegad-supplies-frontend.onrender.com"
+    "https://susegad-supplies-frontend.onrender.com",
+    // --- FIX START ---
+    "http://localhost:5174" // Added for local development
+    // If your frontend uses a different port (e.g., 3000), add that too!
+    // "http://localhost:3000" 
+    // --- FIX END ---
   ]
 }));
 
@@ -22,6 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // MongoDB
+// (Ensuring MONGO_URI is defined as per the previous conversation)
 const client = new MongoClient(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -29,6 +35,11 @@ const client = new MongoClient(process.env.MONGO_URI, {
 
 async function startServer() {
   try {
+    // Check if the connection string is available before connecting
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI is not defined. Check your .env file.");
+    }
+
     await client.connect();
     console.log("✅ Connected to MongoDB");
 
