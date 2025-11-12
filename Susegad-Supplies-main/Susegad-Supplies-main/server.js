@@ -14,11 +14,11 @@ app.use(cors({
   origin: [
     "https://susegad-admin.onrender.com",
     "https://susegad-supplies-frontend.onrender.com",
-    // --- FIX START ---
-    "http://localhost:5174" // Added for local development
-    // If your frontend uses a different port (e.g., 3000), add that too!
-    // "http://localhost:3000" 
-    // --- FIX END ---
+    // --- LOCAL DEVELOPMENT FIXES ---
+    // Added for local development ports seen in console errors
+    "http://localhost:5174", 
+    "http://localhost:5173", 
+    // --- END LOCAL DEVELOPMENT FIXES ---
   ]
 }));
 
