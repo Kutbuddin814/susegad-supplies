@@ -3,10 +3,17 @@ import React, { useState, useEffect, createContext, useContext } from "react";
 const AppContext = createContext();
 export const useAppContext = () => useContext(AppContext);
 
-// Determine the API URL based on environment variables.
-// When running locally with 'npm run dev', VITE_API_BASE_URL (http://localhost:5000) is used.
-// When deployed, this will default to the live backend URL.
-const API_URL = import.meta.env.VITE_API_BASE_URL || "https://susegad-supplies.onrender.com";
+// Helper function to safely read environment variables (resolves compiler warnings)
+const getApiUrl = () => {
+  // Check if VITE_API_BASE_URL is set (usually true when running locally with npm run dev)
+  if (typeof import.meta !== 'undefined' && import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL; // Returns http://localhost:5000
+  }
+  // Fallback to the deployed production URL
+  return "https://susegad-supplies.onrender.com";
+};
+
+const API_URL = getApiUrl();
 
 /* Small helper to fetch JSON safely */
 async function jsonFetch(url, options = {}) {
