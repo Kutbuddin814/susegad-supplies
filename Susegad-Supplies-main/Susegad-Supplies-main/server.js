@@ -11,23 +11,36 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- CORS Configuration (Add live Vercel/Render URLs here) ---
+// 🛑 DEFINITIVE CORS Configuration FIX
+const allowedOrigins = [
+  "https://susegad-supplies-8jx5.onrender.com",
+  "https://susegad-supplies.vercel.app",
+
+  // Local Development Origins
+  "http://localhost:5174",
+  "http://localhost:5173",
+  "http://localhost:5000",
+  "http://localhost:5500"
+];
+
 app.use(cors({
-  origin: [
-    "https://susegad-supplies-8jx5.onrender.com",
-   "https://susegad-supplies.vercel.app",
-    //"https://susegad-supplies-frontend.onrender.com",
-    // CRITICAL: You must add your final deployed Vercel/Render frontend URLs here!
-    // Example Vercel frontend: "https://susegad-frontend.vercel.app" 
-    
-    // Local Development Origins (already included)
-    "http://localhost:5174",
-    "http://localhost:5173",
-    "http://localhost:5000", 
-    "http://127.0.0.1:5500",
-    "http://127.0.0.1:5000",
-    "http://localhost:5500" 
-  ]
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like local file access)
+    if (!origin) return callback(null, true);
+
+    // Allow all known deployed origins
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    }
+    // 🟢 FIX: Allow all traffic originating from the local loopback IP (127.0.0.1) on any port
+    else if (origin.startsWith('http://127.0.0.1')) {
+      callback(null, true);
+    }
+    else {
+      callback(new Error(`Origin ${origin} not allowed by CORS`), false);
+    }
+  },
+  credentials: true
 }));
 
 // Body parsers
@@ -46,7 +59,7 @@ async function connectToMongo() {
     console.error("❌ MONGO_URI is not defined. Cannot connect to DB.");
     return false;
   }
-  
+
   try {
     await client.connect();
     console.log("✅ Connected to MongoDB");
@@ -60,7 +73,7 @@ async function connectToMongo() {
 async function startServer() {
   // 1. Attempt Database Connection
   const dbConnected = await connectToMongo();
-  
+
   if (dbConnected) {
     const db = client.db(process.env.DB_NAME);
 
@@ -71,14 +84,13 @@ async function startServer() {
     console.warn("⚠️ Routes requiring DB connection may fail.");
   }
 
-  // 3. Health Check (Always available, even without DB)
+  // 3. Health Check
   app.get("/", (req, res) => res.send(`✅ Backend API is running. DB status: ${dbConnected ? 'Connected' : 'Disconnected'}`));
 
   // 404 Handler
   app.use((req, res) => res.status(404).json({ message: "Route not found" }));
 
-  // 4. Start Server (CRITICAL for Local/Render use)
-  // This line makes the server available locally.
+  // 4. Start Server
   app.listen(PORT, () => console.log(`✅ Server running on port http://localhost:${PORT}`));
 }
 
