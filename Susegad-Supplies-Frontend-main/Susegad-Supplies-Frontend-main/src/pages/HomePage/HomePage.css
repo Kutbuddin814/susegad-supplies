@@ -1,7 +1,18 @@
+/* Define a new variable for the specific background color */
+:root {
+    /* (Ensure your other color variables are defined here) */
+    --hero-bg-color: #e7f6c2; /* 🌟 New background color: #e7f6c2 🌟 */
+    --primary-color: #386641; 
+    --secondary-color: #f7f7f7;
+    --white-color: #fff;
+    --dark-color: #1f2937;
+}
+
 /* --- Homepage Specific Styles --- */
 .hero-split {
     padding: 60px 0;
-    background-color: var(--background-color);
+    /* 🌟 FIX: Apply the new light yellow-green color 🌟 */
+    background-color: var(--hero-bg-color); 
 }
 .hero-container {
     display: flex;
@@ -16,6 +27,7 @@
     font-size: 3.2rem;
     line-height: 1.2;
     margin-bottom: 20px;
+    color: var(--primary-color); /* Ensure heading color stands out */
 }
 .hero-text p {
     font-size: 1.1rem;
@@ -42,6 +54,10 @@
     outline: none;
 }
 .hero-search .cta-button {
+    /* Assuming cta-button uses a green primary color */
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: none;
     border-radius: 0 50px 50px 0;
 }
 .suggestions-dropdown {
