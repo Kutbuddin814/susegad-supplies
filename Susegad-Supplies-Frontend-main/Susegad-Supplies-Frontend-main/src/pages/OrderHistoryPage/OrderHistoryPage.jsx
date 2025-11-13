@@ -15,7 +15,29 @@ function OrderHistoryPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // ... (fetchOrders function remains the same)
+        if (!user) {
+            setLoading(false);
+            return;
+        }
+
+        const fetchOrders = async () => {
+            try {
+                const res = await fetch(`${API_URL}/shop/orders/${user.email}`);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
+                const data = await res.json();
+                setOrders(data); 
+            } catch (err) {
+                console.error("Could not load order history", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrders();
     }, [user, API_URL]);
 
     const getTotalItems = (items) => {
@@ -24,7 +46,8 @@ function OrderHistoryPage() {
 
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleDateString('en-GB'); // DD/MM/YYYY
+        // Format: 08/11/2025
+        return new Date(dateString).toLocaleDateString('en-GB'); 
     };
     
     // Helper function for currency formatting 
@@ -51,15 +74,11 @@ function OrderHistoryPage() {
                         <div className="order-card-container" key={order._id}>
                             <div className="order-card">
                                 
-                                {/* 🌟 1. HEADER ROW (Date & Total) - FIXING SPACING 🌟 */}
+                                {/* 🌟 1. HEADER ROW (Date & Total) 🌟 */}
                                 <div className="order-header-simple">
-                                    {/* FIX: Explicit spacing and separate spans for clear layout */}
-                                    <span className="order-meta order-date-display">
-                                        Order Date:&nbsp;{orderDateString}
-                                    </span>
-                                    <span className="order-meta order-total-display">
-                                        Total: {formatCurrency(orderTotal)}
-                                    </span>
+                                    {/* FIX: Use dedicated spans for spacing */}
+                                    <span className="order-meta order-date-display">Order Date: {orderDateString}</span>
+                                    <span className="order-meta order-total-display">Total: {formatCurrency(orderTotal)}</span>
                                 </div>
 
                                 {/* 🌟 2. ITEM BODY (First Product Summary) 🌟 */}

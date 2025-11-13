@@ -10,7 +10,7 @@
     --white-color: #fff;
     --primary-green: #6A994E;
 
-    /* Status Colors (Not visible in image, but kept for status label) */
+    /* Status Colors */
     --status-delivered: #5cb85c;
     --status-processing: #f0ad4e; 
     --status-shipped: #337ab7;
@@ -98,4 +98,34 @@
     font-weight: 400;
     color: var(--text-medium);
     font-size: 0.95rem; 
+}
+
+/* Status label placed inside the list for visual cue (Optional/Hidden in example) */
+.status-label-simple {
+    display: block;
+    width: fit-content;
+    padding: 4px 8px;
+    margin-top: 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.status-delivered { background-color: var(--status-delivered); color: var(--white-color); }
+.status-processing { background-color: var(--status-processing); color: var(--white-color); }
+.status-shipped { background-color: var(--status-shipped); color: var(--white-color); }
+
+/* Mobile Stack */
+@media (max-width: 480px) {
+    .order-header-simple {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    .order-total-display {
+        margin-top: 5px;
+        align-self: flex-end; /* Push total to the right on small screens */
+    }
+    .order-item-list-simple {
+        padding: 10px 15px;
+    }
 }
