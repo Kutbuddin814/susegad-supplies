@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 
 // 🛑 DEFINITIVE CORS Configuration for Vercel/Render communication
 const allowedOrigins = [
-  "https://susegad-supplies-8jx5.onrender.com", // Your Render backend domain
+  "https://susegad-supplies-04xz.onrender.com", // Your Render backend domain
   "https://susegad-supplies.vercel.app", // Your Main Vercel frontend domain
   
   // CRITICAL FIX: The specific Admin Vercel Domain
