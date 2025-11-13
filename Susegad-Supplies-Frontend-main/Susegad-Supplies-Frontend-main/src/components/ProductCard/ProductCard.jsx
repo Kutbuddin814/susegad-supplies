@@ -10,12 +10,12 @@ function ProductCard({ product, setCartOpen }) {
         return null;
     }
 
-    // 1. Get stock status
-    // Assuming 'stock' is a top-level field on the product object
-    const stockAvailable = product.stock > 0;
-    const stockCount = product.stock || 0; // Use 0 if stock is null/undefined
-
     const defaultVariation = product.variations[0];
+    
+    // 🛑 CRITICAL FIX: Read stock from the variation object
+    const stockAvailable = defaultVariation.stock > 0;
+    const stockCount = defaultVariation.stock || 0; 
+    
 
     const handleQuickAddToCart = async (e) => {
         e.preventDefault();
@@ -26,19 +26,16 @@ function ProductCard({ product, setCartOpen }) {
             return;
         }
 
-        // 🛑 FRONTEND CHECK: Prevent API call if stock is zero
         if (!stockAvailable) {
             showToast("This product is currently out of stock.", "error");
             return;
         }
 
         try {
-            // ⭐️ FIX: Changed the endpoint from /cart/update to the correct /shop/cart/add
             const res = await fetch(`${API_URL}/shop/cart/add`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    // ⭐️ FIX: Use 'email' key, as required by the backend shopRoutes.js
                     email: user.email,
                     productId: `${product._id}-${defaultVariation.size}`,
                     quantity: 1
@@ -53,7 +50,6 @@ function ProductCard({ product, setCartOpen }) {
                 }
             } else {
                 const data = await res.json();
-                // This message is triggered if backend stock check fails
                 showToast(data.message || 'Failed to add item.', 'error');
             }
         } catch (err) {
@@ -71,7 +67,7 @@ function ProductCard({ product, setCartOpen }) {
                     <p className="product-unit">{defaultVariation.size}</p>
                     <p className="price">Starting at ₹{defaultVariation.price}</p>
 
-                    {/* 🟢 NEW: Stock Status Display */}
+                    {/* 🟢 Stock Status Display */}
                     <p className="stock-status" style={{ color: stockAvailable ? '#6a994e' : '#dc3545', fontWeight: '500', marginTop: '5px' }}>
                         {stockAvailable ? `In Stock: ${stockCount}` : 'OUT OF STOCK'}
                     </p>
