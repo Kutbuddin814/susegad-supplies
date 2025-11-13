@@ -10,6 +10,11 @@ function ProductCard({ product, setCartOpen }) {
         return null;
     }
 
+    // 1. Get stock status
+    // Assuming 'stock' is a top-level field on the product object
+    const stockAvailable = product.stock > 0;
+    const stockCount = product.stock || 0; // Use 0 if stock is null/undefined
+
     const defaultVariation = product.variations[0];
 
     const handleQuickAddToCart = async (e) => {
@@ -20,18 +25,23 @@ function ProductCard({ product, setCartOpen }) {
             showToast("Please log in to add items to your cart.", "error");
             return;
         }
-        
+
+        // 🛑 FRONTEND CHECK: Prevent API call if stock is zero
+        if (!stockAvailable) {
+            showToast("This product is currently out of stock.", "error");
+            return;
+        }
+
         try {
             // ⭐️ FIX: Changed the endpoint from /cart/update to the correct /shop/cart/add
             const res = await fetch(`${API_URL}/shop/cart/add`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     // ⭐️ FIX: Use 'email' key, as required by the backend shopRoutes.js
-                    email: user.email, 
+                    email: user.email,
                     productId: `${product._id}-${defaultVariation.size}`,
-                    // Removed productName and price, as they are fetched server-side
-                    quantity: 1 
+                    quantity: 1
                 })
             });
 
@@ -43,14 +53,15 @@ function ProductCard({ product, setCartOpen }) {
                 }
             } else {
                 const data = await res.json();
+                // This message is triggered if backend stock check fails
                 showToast(data.message || 'Failed to add item.', 'error');
             }
-        } catch (err) { 
+        } catch (err) {
             console.error("Error adding to cart:", err);
             showToast("Could not add item to cart.", "error");
         }
     };
-    
+
     return (
         <Link to={`/product/${product._id}`} className="product-card-link">
             <div className="product-card">
@@ -59,8 +70,22 @@ function ProductCard({ product, setCartOpen }) {
                     <h3>{product.name}</h3>
                     <p className="product-unit">{defaultVariation.size}</p>
                     <p className="price">Starting at ₹{defaultVariation.price}</p>
+
+                    {/* 🟢 NEW: Stock Status Display */}
+                    <p className="stock-status" style={{ color: stockAvailable ? '#6a994e' : '#dc3545', fontWeight: '500', marginTop: '5px' }}>
+                        {stockAvailable ? `In Stock: ${stockCount}` : 'OUT OF STOCK'}
+                    </p>
+
                 </div>
-                <button onClick={handleQuickAddToCart} className="add-to-cart-btn">Add to List</button>
+
+                {/* 🛑 CRITICAL FIX: Disable button when stock is unavailable */}
+                <button
+                    onClick={handleQuickAddToCart}
+                    className="add-to-cart-btn"
+                    disabled={!stockAvailable}
+                >
+                    {stockAvailable ? "Add to List" : "Sold Out"}
+                </button>
             </div>
         </Link>
     );
