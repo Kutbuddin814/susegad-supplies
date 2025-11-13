@@ -16,6 +16,9 @@ const allowedOrigins = [
   "https://susegad-supplies-8jx5.onrender.com", // Your own Render domain
   "https://susegad-supplies.vercel.app", // Your Vercel frontend domain (CRITICAL)
 
+  // 🌟 ADD THE ADMIN VERCEL DOMAIN HERE (CRITICAL FIX)
+  "https://susegad-supplies-ol2u.vercel.app",
+
   // Local Development Origins
   "http://localhost:5174",
   "http://localhost:5173",
