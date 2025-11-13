@@ -8,7 +8,7 @@ const getApiUrl = () => {
   if (typeof import.meta !== 'undefined' && import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL;
   }
-  return "https://susegad-supplies.onrender.com";
+  return "https://susegad-supplies-8jx5.onrender.com";
 };
 
 const API_URL = getApiUrl();
