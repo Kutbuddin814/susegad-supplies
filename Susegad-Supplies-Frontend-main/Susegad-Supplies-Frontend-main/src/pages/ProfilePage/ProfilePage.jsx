@@ -3,7 +3,7 @@ import { useAppContext } from '../../context/AppContext.jsx';
 import AddressModal from '../../components/Modals/AddressModal.jsx';
 import './ProfilePage.css';
 
-function ProfilePage() { 
+function ProfilePage() {
     const { user, setUser, API_URL, showToast } = useAppContext();
     const [profileData, setProfileData] = useState(null);
     const [isEditingName, setIsEditingName] = useState(false);
@@ -14,12 +14,22 @@ function ProfilePage() {
     const fetchProfile = async () => {
         if (user) {
             try {
-                const res = await fetch(`${API_URL}/user/profile/${user.email}`);
+                // Fetch the single saved address object from the backend
+                const res = await fetch(`${API_URL}/shop/user/address/${user.email}`);
                 const data = await res.json();
-                setProfileData(data);
-                setName(data.name);
+
+                // CRITICAL FIX: Structure the incoming data for the component
+                const savedAddress = data.address;
+
+                setProfileData({
+                    ...user,
+                    addresses: savedAddress ? [savedAddress] : [],
+                    email: user.email,
+                    name: user.name || user.email.split('@')[0],
+                });
+                setName(user.name || user.email.split('@')[0]);
             } catch (err) {
-                showToast("Could not load profile.", "error");
+                showToast("Could not load profile or address.", "error");
             }
         }
     };
@@ -30,7 +40,7 @@ function ProfilePage() {
 
     const handleNameUpdate = async () => {
         try {
-            const res = await fetch(`${API_URL}/user/profile`, {
+            const res = await fetch(`${API_URL}/shop/user/profile`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userEmail: user.email, newName: name })
@@ -49,7 +59,7 @@ function ProfilePage() {
             showToast("An error occurred.", "error");
         }
     };
-    
+
     const openAddressModal = (address = null) => {
         setEditingAddress(address);
         setIsModalOpen(true);
@@ -59,13 +69,13 @@ function ProfilePage() {
         try {
             let res;
             if (editingAddress) {
-                res = await fetch(`${API_URL}/user/addresses/${editingAddress._id}`, {
+                res = await fetch(`${API_URL}/shop/user/address/${editingAddress._id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userEmail: user.email, address: formData })
                 });
             } else {
-                res = await fetch(`${API_URL}/user/addresses`, {
+                res = await fetch(`${API_URL}/shop/user/address`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userEmail: user.email, newAddress: formData })
@@ -75,7 +85,7 @@ function ProfilePage() {
             if (res.ok) {
                 showToast("Address saved successfully!");
                 setIsModalOpen(false);
-                fetchProfile();
+                fetchProfile(); // Re-fetch data to update UI
             } else {
                 showToast("Failed to save address.", "error");
             }
@@ -83,11 +93,11 @@ function ProfilePage() {
             showToast("An error occurred while saving the address.", "error");
         }
     };
-    
+
     const handleDeleteAddress = async (addressId) => {
         if (window.confirm("Are you sure you want to delete this address?")) {
             try {
-                const res = await fetch(`${API_URL}/user/addresses/${addressId}`, {
+                const res = await fetch(`${API_URL}/shop/user/address/${addressId}`, {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userEmail: user.email })
@@ -113,7 +123,8 @@ function ProfilePage() {
                     <h1 className="page-title">My Profile</h1>
                     <div className="profile-section">
                         <h3>Personal Details</h3>
-                        <div className="profile-detail-item">
+                        {/* 🛑 FIX 1: Add unique key to the container div */}
+                        <div className="profile-detail-item" key="profile-name-edit">
                             <label>Name:</label>
                             {isEditingName ? (
                                 <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
@@ -129,7 +140,8 @@ function ProfilePage() {
                                 <button className="edit-btn" onClick={() => setIsEditingName(true)}>Edit</button>
                             )}
                         </div>
-                        <div className="profile-detail-item">
+                        {/* 🛑 FIX 1: Add unique key to the container div */}
+                        <div className="profile-detail-item" key="profile-email-display">
                             <label>Email:</label>
                             <span>{profileData.email}</span>
                         </div>
@@ -154,14 +166,14 @@ function ProfilePage() {
                                     </div>
                                 </div>
                             ))
-                        ) : ( <p>You have no saved addresses. Click "Add New Address" to get started.</p> )}
+                        ) : (<p>You have no saved addresses. Click "Add New Address" to get started.</p>)}
                     </div>
                 </div>
             </section>
-            
-            <AddressModal 
-                isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
+
+            <AddressModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
                 onSave={handleSaveAddress}
                 address={editingAddress}
                 defaultName={user?.name}
