@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext.jsx';
 
+// Function to generate a simple mock status
+const getOrderStatus = (orderId) => {
+    const lastDigit = parseInt(orderId.toString().slice(-1));
+    if (lastDigit % 3 === 0) return { label: 'Delivered', class: 'delivered' };
+    if (lastDigit % 3 === 1) return { label: 'Shipped', class: 'shipped' };
+    return { label: 'Processing', class: 'processing' };
+};
+
 function OrderHistoryPage() {
     const { user, API_URL } = useAppContext();
     const [orders, setOrders] = useState([]);
@@ -32,70 +40,74 @@ function OrderHistoryPage() {
         fetchOrders();
     }, [user, API_URL]);
 
-    // Helper function to get total items for display
     const getTotalItems = (items) => {
         return items.reduce((sum, item) => sum + (item.quantity || 0), 0);
-    };
-
-    // Helper function to format the order status (NO LONGER NEEDED, but kept for future use)
-    const formatStatus = (status) => {
-        return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Processing';
     };
 
     return (
         <section id="order-history-page">
             <div className="container">
-                <h1 className="page-title">My Order History</h1>
+                <h1 className="page-title">📜 My Order History</h1>
                 {!user && <p className="message-center">Please log in to view your order history.</p>}
 
                 {loading && user && <p className="message-center">Loading your orders...</p>}
 
-                {!loading && user && orders.length === 0 && <p className="message-center">You have no past orders.</p>}
+                {!loading && user && orders.length === 0 && <p className="message-center">You have no past orders. Time to grab some Susegad!</p>}
 
-                {!loading && user && orders.length > 0 && orders.map((order, index) => (
-                    <div className="order-card-container" key={order._id}>
-                        <div className="order-card">
+                {!loading && user && orders.length > 0 && orders.map((order, index) => {
+                    const status = getOrderStatus(order.orderNumber || order._id);
 
-                            {/* UPDATED: TOP ROW - Now only showing Order ID. Status removed. */}
-                            <div className="order-summary-header">
-                                <span className="order-id-display">
-                                    ORDER # {order.orderNumber || (index + 1)}
-                                </span>
-                            </div>
-
-                            {/* MIDDLE SECTION - Date and Total Amount (Adjusted spacing with CSS below) */}
-                            <div className="order-meta-info">
-                                <div className="meta-item">
-                                    <span className="label">Order Date</span>
-                                    <span className="value">{new Date(order.orderDate).toLocaleDateString('en-GB')}</span>
+                    return (
+                        <div className="order-card-container" key={order._id}>
+                            {/* The main card container, now includes status class */}
+                            <div className={`order-card status-${status.class}`}>
+                                
+                                {/* 🌟 Left Panel: Summary & Date */}
+                                <div className="order-summary-panel">
+                                    <div className="order-status-badge">{status.label}</div>
+                                    
+                                    <div className="meta-group id-group">
+                                        <span className="label">Order ID</span>
+                                        <span className="value">**#{order.orderNumber || (index + 1)}**</span>
+                                    </div>
+                                    
+                                    <div className="meta-group date-group">
+                                        <span className="label">Order Date</span>
+                                        <span className="value">{new Date(order.orderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                    </div>
+                                    
+                                    <div className="meta-group items-group">
+                                        <span className="label">Total Products</span>
+                                        <span className="value">{getTotalItems(order.items)} items</span>
+                                    </div>
                                 </div>
-                                <div className="meta-item">
-                                    <span className="label">Items</span>
-                                    <span className="value">{getTotalItems(order.items)}</span>
-                                </div>
-                                <div className="meta-item total-amount">
-                                    <span className="label">Total Amount</span>
-                                    <span className="value">₹{parseFloat(order.totalAmount).toFixed(2)}</span>
-                                </div>
-                            </div>
 
-                            {/* ITEM DETAILS DROPDOWN */}
-                            <details className="order-items-dropdown">
-                                <summary>View {order.items.length} Item(s) Details</summary>
-                                <div className="item-details-content">
-                                    {order.items.map(item => (
-                                        <div className="order-item" key={item.productId}>
-                                            <span className="order-item-name">{item.productName || item.name}</span>
-                                            <span className="order-item-price">₹{item.price * item.quantity}</span>
-                                            <span className="order-item-quantity">Qty: {item.quantity}</span>
+                                {/* 🌟 Right Panel: Total & Item Details */}
+                                <div className="order-details-panel">
+                                    <div className="total-amount-display">
+                                        <span className="label">Grand Total</span>
+                                        <span className="value">₹{parseFloat(order.totalAmount).toFixed(2)}</span>
+                                    </div>
+                                    
+                                    {/* ITEM DETAILS DROPDOWN */}
+                                    <details className="order-items-dropdown">
+                                        <summary>View All {order.items.length} Products</summary>
+                                        <div className="item-details-content">
+                                            {order.items.map(item => (
+                                                <div className="order-item" key={item.productId}>
+                                                    <span className="order-item-name">**{item.productName || item.name}**</span>
+                                                    <span className="order-item-quantity">Qty: {item.quantity}</span>
+                                                    <span className="order-item-price">₹{(item.price * item.quantity).toFixed(2)}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                            </details>
+                                    </details>
 
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </section>
     );
