@@ -1,5 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-const API = "https://susegad-supplies-backend.onrender.com";
+
+  // Define API based on environment
+  const hostname = window.location.hostname;
+
+  const API = (hostname.includes('onrender.com') || hostname === 'susegad-supplies-admin.web.app')
+    ? "https://susegad-supplies-backend.onrender.com"
+    : "http://localhost:5000";
 
   const form = document.getElementById("adminLoginForm");
   const emailInput = document.getElementById("email");
