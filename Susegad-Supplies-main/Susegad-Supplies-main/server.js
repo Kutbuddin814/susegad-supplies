@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     "https://susegad-supplies-8jx5.onrender.com",
-    "https://susegad-supplies-frontend.onrender.com",
+    //"https://susegad-supplies-frontend.onrender.com",
     // CRITICAL: You must add your final deployed Vercel/Render frontend URLs here!
     // Example Vercel frontend: "https://susegad-frontend.vercel.app" 
     
