@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     // Define the live API URL of your Render backend
-    const RENDER_API_URL = "https://susegad-supplies-8jx5.onrender.com";
+    const RENDER_API_URL = "https://susegad-supplies-04xz.onrender.com";
 
     // Define the live hostname of your Vercel Admin page
     const VERCEL_ADMIN_HOST = "susegad-supplies-ol2u.vercel.app";

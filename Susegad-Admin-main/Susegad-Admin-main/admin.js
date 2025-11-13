@@ -5,7 +5,7 @@
 
   // Determines if the app is running locally (default) or deployed (Render/web.app)
   if (hostname.includes('onrender.com') || hostname === 'susegad-supplies-admin.web.app') {
-    API = "https://susegad-supplies-8jx5.onrender.com";
+    API = "https://susegad-supplies-04xz.onrender.com";
   } else {
     API = "http://localhost:5000";
   }
