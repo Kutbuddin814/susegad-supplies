@@ -43,8 +43,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// 🌟 CRITICAL FIX: Explicitly handle preflight OPTIONS requests 
-app.options('*', cors());
 
 
 // Body parsers
