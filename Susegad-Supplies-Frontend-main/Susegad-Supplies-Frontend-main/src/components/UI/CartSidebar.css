@@ -1,11 +1,23 @@
 /* --- CartSidebar.css --- */
+:root {
+    /* Define your primary/accent colors for reuse */
+    --primary-color: #6a994e;
+    --primary-color-darker: #5a8542;
+    --secondary-color: #e9f0e4;
+    /* Light background for highlights */
+    --text-color: #333;
+    --muted-text: #777;
+    --danger-color: #dc3545;
+}
+
 .cart-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+    /* Darker, more prominent overlay */
     z-index: 1000;
     display: none;
 }
@@ -18,36 +30,306 @@
     position: fixed;
     top: 0;
     right: 0;
-    width: 350px; /* Adjust as needed */
+    width: 380px;
+    /* Slightly wider for better content space */
     height: 100%;
-    background: white;
-    box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2);
+    background: #f7f7f7;
+    /* Soft, light background */
+    box-shadow: -6px 0 20px rgba(0, 0, 0, 0.4);
+    /* Stronger shadow */
     transform: translateX(100%);
     transition: transform 0.3s ease-in-out;
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 0;
 }
 
 .cart-sidebar.open {
     transform: translateX(0);
 }
 
+/* --- 1. Header Styling --- */
+
 .cart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 15px;
+    padding: 20px 25px;
+    /* Generous padding */
+    margin-bottom: 0;
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.cart-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.8rem;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+
+/* --- 2. Item List & Item Card Styling --- */
+
+.cart-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-message-container {
+    padding: 30px 25px;
+    text-align: center;
+    color: var(--muted-text);
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+.cart-message-container p {
     margin-bottom: 20px;
 }
+
+.cart-message-container .cta-button,
+.cart-message-container .secondary-button {
+    padding: 12px 25px;
+    font-size: 1rem;
+    width: auto;
+    display: inline-block;
+}
+
 
 .cart-items-list {
     flex-grow: 1;
     overflow-y: auto;
+    padding: 20px 25px;
 }
 
+.cart-item {
+    display: grid;
+    /* Updated grid layout: Image | Main Details (Name, Unit Price, Quantity Controls, Total Price) | Remove Button */
+    grid-template-columns: 70px 1fr auto;
+    gap: 15px;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.item-thumbnail {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.item-thumbnail-fallback {
+    width: 70px;
+    height: 70px;
+    background-color: #e0e0e0;
+    /* Grey fallback */
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 0.8rem;
+    text-align: center;
+    line-height: 1;
+    /* You can add text like 'No Image' inside here if needed by JS */
+}
+
+.item-main-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    /* Spacing between info and controls */
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    line-height: 1.3;
+}
+
+.item-unit-price {
+    font-size: 0.9rem;
+    color: var(--muted-text);
+}
+
+.item-actions-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* Pushes quantity to left, total price to right */
+    width: 100%;
+    margin-top: 8px;
+    /* Space from item name */
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 35px;
+    /* Taller buttons */
+}
+
+.quantity-controls button {
+    background: white;
+    border: none;
+    padding: 0 12px;
+    /* Wider buttons */
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--primary-color-darker);
+    height: 100%;
+    /* Fill button height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s;
+}
+
+.quantity-controls button:hover {
+    background-color: var(--secondary-color);
+}
+
+
+.quantity-controls span {
+    padding: 0 10px;
+    font-weight: 600;
+    color: var(--text-color);
+    background: #fff;
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
+}
+
+.item-total-price {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.25rem;
+    /* Larger total price */
+    flex-shrink: 0;
+    text-align: right;
+}
+
+/* --- Prominent Remove Button --- */
+.remove-item-btn {
+    background: none;
+    border: none;
+    color: var(--danger-color);
+    font-size: 1.6rem;
+    /* Much larger icon */
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.2s ease-out, color 0.2s;
+    justify-self: center;
+    /* Center horizontally in its grid cell */
+    align-self: flex-start;
+    /* Align to the top of its grid cell */
+    margin-top: 5px;
+    /* Small adjustment */
+    opacity: 0.7;
+}
+
+.remove-item-btn:hover {
+    color: #ff0000;
+    /* Redder on hover */
+    transform: scale(1.1);
+    /* Slightly grow on hover */
+    opacity: 1;
+}
+
+
+/* --- 3. Footer Styling --- */
+
 .cart-footer {
-    padding-top: 20px;
-    border-top: 1px solid #eee;
+    padding: 25px;
+    background: white;
+    border-top: 2px solid var(--secondary-color);
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+    /* Subtle shadow on footer top */
+}
+
+.cart-summary {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.subtotal-amount {
+    color: var(--primary-color);
+}
+
+.cta-button.checkout-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    /* Ensure text is white for contrast */
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.cta-button.checkout-btn:hover {
+    background-color: var(--primary-color-darker);
+    transform: translateY(-1px);
+}
+
+.cta-button.checkout-btn:disabled {
+    background-color: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+.secondary-button.continue-shopping {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 15px;
+    font-size: 1.1rem;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.secondary-button.continue-shopping:hover {
+    background: var(--primary-color);
+    color: white;
 }
