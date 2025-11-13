@@ -368,5 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         // Default load for the Products tab if none is active
         loadProducts(); 
+        loadCategories();
+    loadOrders();
     }
 });
