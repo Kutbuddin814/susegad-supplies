@@ -252,7 +252,7 @@ export default function shopRoutes(db) {
                 
             const currentStock = variation ? variation.stock : (productDoc.stock || 0);
             
-            // If the variation is missing entirely, treat it as out of stock
+            // If the variation is missing entirely, treat it as invalid selection
             if (!variation) {
                  return res.status(400).json({ message: "Invalid product size/variation selected." });
             }
@@ -406,16 +406,21 @@ export default function shopRoutes(db) {
             const productCollection = db.collection("products");
 
             for (const item of items) {
-                const [baseProductId] = item.productId.split('-');
+                const [baseProductId, variationSize] = item.productId.split('-');
 
                 try {
                     if (ObjectId.isValid(baseProductId)) {
-                        // Decrement stock from the root field (if used)
-                        // If using variations, this needs to be a $inc on the specific variation array element.
-                        // Assuming the stock is flat for simplicity, but variations require complex $[] updates.
-                        await productCollection.updateOne(
-                            { _id: new ObjectId(baseProductId) },
-                            { $inc: { stock: -item.quantity } }
+                        // 🌟 FIX: Use $inc positional update to target stock in the specific variation object 🌟
+                         await productCollection.updateOne(
+                            { 
+                                _id: new ObjectId(baseProductId),
+                                // Find the variation array element that matches the size
+                                "variations.size": variationSize 
+                            },
+                            { 
+                                // Decrement the stock field within the matched variation
+                                $inc: { "variations.$.stock": -item.quantity } 
+                            }
                         );
                     } else {
                         console.warn(`[Inventory] Invalid ObjectId for item: ${baseProductId}. Skipping stock update.`);

@@ -56,6 +56,8 @@ export default function adminRoutes(db) {
         try {
             const { name, categoryId, categoryName, price, stock, imageUrl, description } = req.body || {};
             if (!name) return res.status(400).json({ message: "Name required" });
+            
+            // NOTE: This insert structure is correct for products without variations.
             const doc = {
                 name,
                 categoryId: categoryId ? new ObjectId(categoryId) : undefined,
@@ -78,16 +80,54 @@ export default function adminRoutes(db) {
         try {
             const id = req.params.id;
             const update = { ...req.body };
-            if (update.categoryId) update.categoryId = new ObjectId(update.categoryId);
-            if (typeof update.price !== "undefined") update.price = Number(update.price);
-            if (typeof update.stock !== "undefined") update.stock = Number(update.stock);
+            const updateFields = {};
+            
+            if (!ObjectId.isValid(id)) {
+                return res.status(400).json({ message: "Invalid product ID." });
+            }
+
+            // 🌟 CRITICAL FIX: Handle nested stock/price update for the first variation 🌟
+            
+            // Check for stock update (assuming update.stock is sent for the primary variation)
+            if (typeof update.stock !== "undefined") {
+                const newStockValue = Number(update.stock);
+                if (!isNaN(newStockValue)) {
+                    // This update assumes the *first* variation (index 0) is being updated
+                    updateFields['variations.0.stock'] = newStockValue; 
+                }
+            }
+            
+            // Check for price update (assuming update.price is sent for the primary variation)
+            if (typeof update.price !== "undefined") {
+                const newPriceValue = Number(update.price);
+                if (!isNaN(newPriceValue)) {
+                    updateFields['variations.0.price'] = newPriceValue;
+                }
+            }
+            
+            // Handle other top-level fields
+            if (update.categoryId) updateFields.categoryId = new ObjectId(update.categoryId);
+            if (update.name) updateFields.name = update.name;
+            if (update.categoryName) updateFields.category = update.categoryName;
+            if (update.imageUrl) updateFields.imageUrl = update.imageUrl;
+            if (update.description) updateFields.description = update.description;
+            // NOTE: If updating the top-level price/stock fields is also desired, add:
+            // if (typeof update.price !== "undefined") updateFields.price = Number(update.price);
+            // if (typeof update.stock !== "undefined") updateFields.stock = Number(update.stock);
+
+            // Execute the update
+            if (Object.keys(updateFields).length === 0) {
+                return res.status(400).json({ message: "No valid fields provided for update." });
+            }
+
             await db.collection("products").updateOne(
                 { _id: new ObjectId(id) },
-                { $set: update }
+                { $set: updateFields }
             );
+            
             res.json({ message: "Product updated" });
         } catch (e) {
-            console.error(e);
+            console.error("Product update failed:", e);
             res.status(500).json({ message: "Failed to update product" });
         }
     });
