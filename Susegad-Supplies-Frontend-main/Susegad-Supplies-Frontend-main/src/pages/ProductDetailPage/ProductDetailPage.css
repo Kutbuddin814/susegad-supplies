@@ -102,27 +102,70 @@
     width: 100%;
     padding: 15px;
     font-size: 1.2rem;
+    transition: all 0.3s ease;
+    /* 🌟 ADDED CURSOR PROPERTY HERE */
+    cursor: pointer; 
 }
 
-/* 🟢 FIX: Add hover effects for the buttons */
+/* 🟢 Primary Button Hover/Disabled States */
 
-/* Assuming cta-button is the primary, green button */
 .cta-button:hover,
 .add-to-cart-main:hover {
-    background-color: var(--dark-primary-color, #5a7d45);
-    /* Darken the primary color */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    transform: translateY(-1px);
+
+    /* Only apply hover if NOT disabled */
+    &:not(:disabled) {
+        background-color: var(--dark-primary-color, #5a7d45);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        transform: translateY(-1px);
+    }
 }
 
-/* 💡 FIX for Buy Now Button: Add hover styles for secondary-button */
+.cta-button[disabled],
+.add-to-cart-main[disabled] {
+    background-color: #ccc;
+    /* Grey background */
+    border-color: #ccc;
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.8;
+    box-shadow: none;
+    transform: none;
+}
+
+
+/* 💡 Secondary Button Styles (Buy Now) */
+.secondary-button,
+.buy-now-btn {
+    background: transparent;
+    /* Assuming secondary is white/transparent by default */
+    border: 2px solid var(--primary-color, #6a994e);
+    color: var(--primary-color, #6a994e);
+}
+
+/* 💡 Secondary Button Hover/Disabled States (Buy Now) */
+/* This block explicitly removes the hover effect but still needs the pointer cursor. */
 .secondary-button:hover,
 .buy-now-btn:hover {
-    background-color: var(--primary-color, #6a994e);
-    /* Use primary color for fill */
-    color: var(--white-color, white);
-    /* Change text to white */
-    border-color: var(--primary-color, #6a994e);
-    /* Keep border consistent */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+    /* Only apply hover if NOT disabled */
+    &:not(:disabled) {
+        /* Reset hover effects (as requested previously) */
+        transform: none; 
+        box-shadow: none; 
+        background-color: transparent; 
+        color: var(--primary-color, #6a994e); 
+        border-color: var(--primary-color, #6a994e); 
+    }
+}
+
+.secondary-button[disabled],
+.buy-now-btn[disabled] {
+    border-color: #ccc;
+    color: #999;
+    background: #f8f8f8;
+    /* Light grey background */
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+    transform: none;
 }
