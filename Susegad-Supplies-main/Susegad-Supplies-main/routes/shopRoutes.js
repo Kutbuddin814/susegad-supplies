@@ -6,10 +6,7 @@ const router = express.Router();
 
 export default function shopRoutes(db) {
 
-    // 🛑 CRITICAL FIX: The /products/suggestions route MUST come before /products/:id
-    // Otherwise, 'suggestions' will be interpreted as an ':id' parameter.
-
-    // 1. ✅ PRODUCT SUGGESTIONS (Autocomplete - moved to top to prevent conflict)
+    // 1. ✅ PRODUCT SUGGESTIONS (MUST be before :id route)
     router.get("/products/suggestions", async (req, res) => {
         try {
             const q = req.query.q?.trim();
@@ -38,7 +35,7 @@ export default function shopRoutes(db) {
         }
     });
 
-    // 3. ✅ GET SINGLE PRODUCT BY ID (Moved below suggestions)
+    // 3. ✅ GET SINGLE PRODUCT BY ID 
     router.get("/products/:id", async (req, res) => {
         try {
             const id = req.params.id;
@@ -74,7 +71,7 @@ export default function shopRoutes(db) {
     // -----------------------------------------------------------------
     // User Auth Routes
     // -----------------------------------------------------------------
-
+    
     // ✅ USER SIGNUP
     router.post("/signup", async (req, res) => {
         try {
@@ -193,7 +190,7 @@ export default function shopRoutes(db) {
 
             const result = await db.collection("users").updateOne(
                 { email: userEmail },
-                { $set: { addresses: [newAddress] } }
+                { $set: { addresses: [newAddress] } } 
             );
 
             if (result.matchedCount === 0) {
@@ -281,7 +278,7 @@ export default function shopRoutes(db) {
                 productName: `${productDoc.name} (${variationSize || 'default'})`,
                 price: price,
                 quantity: quantityToAdd,
-                imageUrl: productDoc.imageUrl || null,
+                imageUrl: productDoc.imageUrl || null, 
             };
 
             if (!cart) {
@@ -356,7 +353,7 @@ export default function shopRoutes(db) {
                 shippingAddress,
                 paymentMethod
             } = req.body;
-
+            
             if (!userEmail || !items || items.length === 0 || !totalAmount || !shippingAddress) {
                 return res.status(400).json({ message: "Missing order details (userEmail, items, totalAmount, shippingAddress are required)" });
             }
@@ -365,12 +362,12 @@ export default function shopRoutes(db) {
             const newOrder = {
                 userEmail: userEmail,
                 orderDate: new Date(),
-                totalAmount: totalAmount,
+                totalAmount: totalAmount, 
                 items: items,
-                shippingAddress: shippingAddress,
+                shippingAddress: shippingAddress, 
                 paymentMethod: paymentMethod || 'COD',
                 status: 'Processing',
-                orderNumber: 'SS' + Date.now(),
+                orderNumber: 'SS' + Date.now(), 
             };
             const result = await db.collection("orders").insertOne(newOrder);
 
@@ -397,7 +394,7 @@ export default function shopRoutes(db) {
             // ------------------------------------------
 
             // 2. Clear the cart (by deleting the cart document)
-            await db.collection("carts").deleteOne({ email: userEmail });
+            await db.collection("carts").deleteOne({ email: userEmail }); 
 
             res.json({
                 message: "Order placed successfully",
