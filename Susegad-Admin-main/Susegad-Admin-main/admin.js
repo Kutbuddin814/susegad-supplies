@@ -39,20 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const toastContainer = document.getElementById('toast-container');
     
     // --- Initializing Forms/Table Handlers ---
-    const addProductForm = document.getElementById('add-product-form');
-    const addCategoryForm = document.getElementById('add-category-form');
-    const inventoryTableBody = document.getElementById('inventory-table-body');
-    const categorySelect = document.getElementById('category');
-    const categoryList = document.getElementById('category-list');
-    
-    // Elements for tab switching
-    const tabLinks = document.querySelectorAll('.tablink'); 
-    const tabs = {
-        products: document.getElementById("tab-products-content"), // Assuming content IDs end in -content
-        categories: document.getElementById("tab-categories-content"),
-        orders: document.getElementById("tab-orders-content")
-    };
-
+    const tabLinks = document.querySelectorAll('.tablink'); // Elements in the sidebar nav
 
     // 🟢 CURRENCY FORMATTER HELPER 🟢
     const currencyFormatter = new Intl.NumberFormat('en-IN', {
@@ -105,9 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${p.imageUrl ? `<img src="${p.imageUrl}" />` : ""}</td>
                 <td>${p.name || ""}</td>
                 <td>${p.category || ""}</td>
-                
                 <td>${formatPrice(p.price)}</td>
-                
                 <td>${p.stock ?? 0}</td>
                 <td>
                     <button data-id="${p._id}" class="btn ghost edit">Edit</button>
@@ -170,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cTbody.innerHTML = items.map(c => `<tr><td>${c.name}</td></tr>`).join("");
     }
     
+    // ... (getOrderSummary, createStatusButtons, loadOrders, etc. functions remain the same) ...
     const getProductSummary = (items) => {
         if (!items || items.length === 0) return 'No Items';
         const names = items.map(item => item.productName || item.name).filter(n => n).slice(0, 2).join(', ');
@@ -221,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- EVENT LISTENERS AND HANDLERS ---
     // -----------------------------------------------------------
 
-    // 🌟 FIX: TAB SWITCHING LISTENER (CRITICAL FOR CLICKABLE CATEGORIES/ORDERS) 🌟
+    // 🌟 FIX: ATTACH TAB SWITCHING LISTENER (CRITICAL FOR CLICKABLE TABS) 🌟
     tabLinks.forEach(btn => {
         btn.addEventListener("click", () => {
             const tabId = btn.dataset.tab; 
@@ -231,13 +217,11 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add("active");
             
             // 2. Hide all content divs and show the relevant one
-            // NOTE: This assumes content divs have IDs like tab-products-content
-            document.querySelectorAll('[data-tab]').forEach(div => {
-                if (div.classList.contains('tab-content-area')) { // Use a specific class to find all content divs
-                    div.classList.add("hidden");
-                }
+            // NOTE: We rely on content divs having a common class or being siblings/children of a container
+            document.querySelectorAll('.tab-content-area').forEach(div => { // Assuming 'tab-content-area' is a class applied to all content divs
+                div.classList.add("hidden");
             });
-            const contentDiv = document.getElementById(`tab-${tabId}-content`);
+            const contentDiv = document.getElementById(`tab-${tabId}-content`); 
             if (contentDiv) {
                 contentDiv.classList.remove("hidden");
             }
