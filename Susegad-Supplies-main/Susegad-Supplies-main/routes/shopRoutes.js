@@ -6,7 +6,28 @@ const router = express.Router();
 
 export default function shopRoutes(db) {
 
-    // ✅ GET ALL PRODUCTS
+    // 🛑 CRITICAL FIX: The /products/suggestions route MUST come before /products/:id
+    // Otherwise, 'suggestions' will be interpreted as an ':id' parameter.
+
+    // 1. ✅ PRODUCT SUGGESTIONS (Autocomplete - moved to top to prevent conflict)
+    router.get("/products/suggestions", async (req, res) => {
+        try {
+            const q = req.query.q?.trim();
+            if (!q) return res.json([]);
+
+            const results = await db.collection("products")
+                .find({ name: { $regex: q, $options: "i" } })
+                .limit(10)
+                .toArray();
+
+            res.json(results);
+        } catch (err) {
+            console.error("Suggestions error:", err);
+            res.status(500).json([]);
+        }
+    });
+
+    // 2. ✅ GET ALL PRODUCTS
     router.get("/products", async (req, res) => {
         try {
             const products = await db.collection("products").find().toArray();
@@ -17,7 +38,7 @@ export default function shopRoutes(db) {
         }
     });
 
-    // ✅ GET SINGLE PRODUCT BY ID
+    // 3. ✅ GET SINGLE PRODUCT BY ID (Moved below suggestions)
     router.get("/products/:id", async (req, res) => {
         try {
             const id = req.params.id;
@@ -39,7 +60,7 @@ export default function shopRoutes(db) {
         }
     });
 
-    // ✅ GET ALL CATEGORIES
+    // 4. ✅ GET ALL CATEGORIES
     router.get("/categories", async (req, res) => {
         try {
             const categories = await db.collection("categories").find().toArray();
@@ -50,23 +71,9 @@ export default function shopRoutes(db) {
         }
     });
 
-    // ✅ PRODUCT SUGGESTIONS (Autocomplete)
-    router.get("/products/suggestions", async (req, res) => {
-        try {
-            const q = req.query.q?.trim();
-            if (!q) return res.json([]);
-
-            const results = await db.collection("products")
-                .find({ name: { $regex: q, $options: "i" } })
-                .limit(10)
-                .toArray();
-
-            res.json(results);
-        } catch (err) {
-            console.error("Suggestions error:", err);
-            res.status(500).json([]);
-        }
-    });
+    // -----------------------------------------------------------------
+    // User Auth Routes
+    // -----------------------------------------------------------------
 
     // ✅ USER SIGNUP
     router.post("/signup", async (req, res) => {
@@ -108,7 +115,7 @@ export default function shopRoutes(db) {
         }
     });
 
-    // ✅ USER LOGIN (bcrypt compare FIXED)
+    // ✅ USER LOGIN 
     router.post("/login", async (req, res) => {
         try {
             const { email, password } = req.body;
@@ -144,8 +151,11 @@ export default function shopRoutes(db) {
         }
     });
 
+    // -----------------------------------------------------------------
+    // Cart, Order, and User Data Routes
+    // -----------------------------------------------------------------
+
     // ⭐️ GET USER ADDRESS 
-    // Full path: /shop/user/address/:email
     router.get("/user/address/:email", async (req, res) => {
         try {
             const email = req.params.email;
@@ -155,7 +165,6 @@ export default function shopRoutes(db) {
                 return res.status(404).json({ message: "User not found" });
             }
 
-            // Return the first address found, or a default placeholder structure
             const address = user.addresses && user.addresses.length > 0
                 ? user.addresses[0]
                 : {
@@ -173,7 +182,7 @@ export default function shopRoutes(db) {
         }
     });
 
-    // ✅ POST /shop/user/address (REQUIRED for CheckoutPage)
+    // ✅ POST /shop/user/address 
     router.post("/user/address", async (req, res) => {
         try {
             const { userEmail, newAddress } = req.body;
@@ -182,10 +191,9 @@ export default function shopRoutes(db) {
                 return res.status(400).json({ message: 'Missing user email or address data.' });
             }
 
-            // Update the user document to replace the addresses array with the new address
             const result = await db.collection("users").updateOne(
                 { email: userEmail },
-                { $set: { addresses: [newAddress] } } // Save as the only/primary address
+                { $set: { addresses: [newAddress] } }
             );
 
             if (result.matchedCount === 0) {
@@ -220,7 +228,7 @@ export default function shopRoutes(db) {
         }
     });
 
-    // ⭐️ ADD ITEM TO CART (Fetches product details before saving)
+    // ⭐️ ADD ITEM TO CART 
     router.post("/cart/add", async (req, res) => {
         try {
             const { email, productId, quantity } = req.body;
@@ -240,7 +248,7 @@ export default function shopRoutes(db) {
                 return res.status(404).json({ message: "Product not found during cart add" });
             }
 
-            // 🛑 CRITICAL BACKEND STOCK CHECK (New Logic)
+            // 🛑 CRITICAL BACKEND STOCK CHECK (Logic preserved)
             const quantityToAdd = parseInt(quantity);
             const currentStock = productDoc.stock || 0;
             const cart = await db.collection("carts").findOne({ email });
@@ -266,7 +274,6 @@ export default function shopRoutes(db) {
             // ---------------------------------------------
 
             const variation = productDoc.variations ? productDoc.variations.find(v => v.size === variationSize) : null;
-            // Use basePrice if variations field is missing or variation is not found
             const price = variation ? variation.price : productDoc.price || productDoc.basePrice;
 
             const cartItem = {
@@ -274,7 +281,7 @@ export default function shopRoutes(db) {
                 productName: `${productDoc.name} (${variationSize || 'default'})`,
                 price: price,
                 quantity: quantityToAdd,
-                imageUrl: productDoc.imageUrl || null, // Include image URL for display
+                imageUrl: productDoc.imageUrl || null,
             };
 
             if (!cart) {
@@ -339,7 +346,7 @@ export default function shopRoutes(db) {
         }
     });
 
-    // 💥 CRITICAL: CHECKOUT / PLACE ORDER (Includes Inventory Decrement)
+    // 💥 CRITICAL: CHECKOUT / PLACE ORDER 
     router.post("/checkout", async (req, res) => {
         try {
             const {
@@ -349,7 +356,6 @@ export default function shopRoutes(db) {
                 shippingAddress,
                 paymentMethod
             } = req.body;
-            // ... (validation check remains the same) ...
 
             if (!userEmail || !items || items.length === 0 || !totalAmount || !shippingAddress) {
                 return res.status(400).json({ message: "Missing order details (userEmail, items, totalAmount, shippingAddress are required)" });
@@ -359,17 +365,17 @@ export default function shopRoutes(db) {
             const newOrder = {
                 userEmail: userEmail,
                 orderDate: new Date(),
-                totalAmount: totalAmount, // Use totalAmount
+                totalAmount: totalAmount,
                 items: items,
-                shippingAddress: shippingAddress, // Use shippingAddress
+                shippingAddress: shippingAddress,
                 paymentMethod: paymentMethod || 'COD',
                 status: 'Processing',
-                orderNumber: 'SS' + Date.now(), // Simple unique order number
+                orderNumber: 'SS' + Date.now(),
             };
             const result = await db.collection("orders").insertOne(newOrder);
 
 
-            // 🛑 CRITICAL FIX: Inventory Stock Update (Robust against invalid IDs)
+            // 🛑 CRITICAL FIX: Inventory Stock Update
             const productCollection = db.collection("products");
 
             for (const item of items) {
@@ -377,7 +383,6 @@ export default function shopRoutes(db) {
 
                 try {
                     if (ObjectId.isValid(baseProductId)) {
-                        // Decrement the stock count by the purchased quantity
                         await productCollection.updateOne(
                             { _id: new ObjectId(baseProductId) },
                             { $inc: { stock: -item.quantity } }
@@ -392,7 +397,7 @@ export default function shopRoutes(db) {
             // ------------------------------------------
 
             // 2. Clear the cart (by deleting the cart document)
-            await db.collection("carts").deleteOne({ email: userEmail }); // Use userEmail to clear cart
+            await db.collection("carts").deleteOne({ email: userEmail });
 
             res.json({
                 message: "Order placed successfully",
