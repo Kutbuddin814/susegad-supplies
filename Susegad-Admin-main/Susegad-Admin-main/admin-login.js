@@ -1,45 +1,58 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Define API based on environment
-  const hostname = window.location.hostname;
+    // Define the live API URL of your Render backend
+    const RENDER_API_URL = "https://susegad-supplies-8jx5.onrender.com";
 
-  const API = (hostname.includes('onrender.com') || hostname === 'susegad-supplies-admin.web.app')
-    ? "https://susegad-supplies-backend.onrender.com"
-    : "http://localhost:5000";
+    // Define the live hostname of your Vercel Admin page
+    const VERCEL_ADMIN_HOST = "susegad-supplies-ol2u.vercel.app";
 
-  const form = document.getElementById("adminLoginForm");
-  const emailInput = document.getElementById("email");
-  const passInput = document.getElementById("password");
-  const errorBox = document.getElementById("error");
+    const hostname = window.location.hostname;
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    errorBox.textContent = "";
+    // 🛑 CORRECTED API BASE URL LOGIC
+    // Use the live Render URL if the Admin page is deployed on Vercel
+    // or if the URL includes 'onrender.com' (e.g., if you test the admin page through Render)
+    const API = (hostname === 'localhost' || hostname === '127.0.0.1')
+        ? "http://localhost:5000" // ⬅️ Local Development
+        : RENDER_API_URL;         // ⬅️ Deployed (Vercel or Render)
 
-    const payload = {
-      email: emailInput.value.trim(),
-      password: passInput.value.trim()
-    };
+    const form = document.getElementById("adminLoginForm");
+    const emailInput = document.getElementById("email");
+    const passInput = document.getElementById("password");
+    const errorBox = document.getElementById("error");
 
-    try {
-      const res = await fetch(`${API}/admin/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorBox.textContent = "";
 
-      const data = await res.json();
+        const payload = {
+            email: emailInput.value.trim(),
+            password: passInput.value.trim()
+        };
 
-      if (!res.ok) {
-        errorBox.textContent = data.message || "Invalid credentials";
-        return;
-      }
+        try {
+            // Use the determined API base URL
+            const res = await fetch(`${API}/admin/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                // 💡 CRITICAL: Include credentials if your backend uses session/cookies for authentication
+                credentials: 'include',
+                body: JSON.stringify(payload)
+            });
 
-      localStorage.setItem("adminUser", JSON.stringify(data.admin));
-      window.location.href = "admin.html";
-    } catch (err) {
-      console.error("Login error:", err);
-      errorBox.textContent = "Server error. Try again.";
-    }
-  });
+            const data = await res.json();
+
+            if (!res.ok) {
+                // If the server returns a non-200 status (e.g., 401, 400)
+                errorBox.textContent = data.message || "Invalid credentials";
+                return;
+            }
+
+            // Successful login
+            localStorage.setItem("adminUser", JSON.stringify(data.admin));
+            window.location.href = "admin.html";
+        } catch (err) {
+            console.error("Login error:", err);
+            errorBox.textContent = "Server error. Try again.";
+        }
+    });
 });
