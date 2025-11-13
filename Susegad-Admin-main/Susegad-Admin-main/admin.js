@@ -6,7 +6,7 @@
     // Determines if the app is running locally (default) or deployed (Render/web.app)
     if (hostname.includes('vercel.app') || hostname.includes('onrender.com')) {
         // Use your confirmed Render Backend URL
-        API = "https://susegad-supplies-8jx5.onrender.com";
+        API = "https://susegad-supplies-04xz.onrender.com";
     } else {
         API = "http://localhost:5000";
     }
