@@ -22,14 +22,15 @@ function ProductCard({ product, setCartOpen }) {
         }
         
         try {
-            const res = await fetch(`${API_URL}/cart/update`, {
+            // ⭐️ FIX: Changed the endpoint from /cart/update to the correct /shop/cart/add
+            const res = await fetch(`${API_URL}/shop/cart/add`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ 
-                    userEmail: user.email, 
+                    // ⭐️ FIX: Use 'email' key, as required by the backend shopRoutes.js
+                    email: user.email, 
                     productId: `${product._id}-${defaultVariation.size}`,
-                    productName: `${product.name} (${defaultVariation.size})`,
-                    price: defaultVariation.price,
+                    // Removed productName and price, as they are fetched server-side
                     quantity: 1 
                 })
             });

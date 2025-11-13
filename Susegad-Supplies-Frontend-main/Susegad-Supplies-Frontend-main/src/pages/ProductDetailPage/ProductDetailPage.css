@@ -2,45 +2,56 @@
 #product-detail-page {
     padding: 60px 0;
 }
+
 .product-detail-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 50px;
     align-items: flex-start;
 }
+
 .product-image-gallery img {
     width: 100%;
     border-radius: 12px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
 }
+
 .product-info .product-title {
     font-size: 2.8rem;
     margin-bottom: 15px;
 }
+
 .product-info .product-description {
     font-size: 1.1rem;
     line-height: 1.8;
     color: #555;
     margin-bottom: 30px;
 }
+
 .product-info .product-price {
     font-size: 2.5rem;
     font-weight: 700;
     color: var(--primary-color);
     margin-bottom: 30px;
 }
-.size-selector, .quantity-selector {
+
+.size-selector,
+.quantity-selector {
     margin-bottom: 30px;
 }
-.size-selector h4, .quantity-selector h4 {
+
+.size-selector h4,
+.quantity-selector h4 {
     font-size: 1.1rem;
     margin-bottom: 10px;
     font-weight: 600;
 }
+
 .size-options {
     display: flex;
     gap: 10px;
 }
+
 .size-btn {
     padding: 10px 20px;
     border: 2px solid #ddd;
@@ -51,16 +62,19 @@
     font-weight: 600;
     transition: all 0.3s ease;
 }
+
 .size-btn.active {
     background-color: var(--primary-color);
     color: var(--white-color);
     border-color: var(--primary-color);
 }
+
 .quantity-controls {
     display: flex;
     align-items: center;
     gap: 15px;
 }
+
 .quantity-controls button {
     width: 40px;
     height: 40px;
@@ -71,17 +85,44 @@
     font-weight: 600;
     cursor: pointer;
 }
+
 .quantity-controls span {
     font-size: 1.5rem;
     font-weight: 700;
 }
+
 .product-actions {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
-.add-to-cart-main, .buy-now-btn {
+
+.add-to-cart-main,
+.buy-now-btn {
     width: 100%;
     padding: 15px;
     font-size: 1.2rem;
+}
+
+/* 🟢 FIX: Add hover effects for the buttons */
+
+/* Assuming cta-button is the primary, green button */
+.cta-button:hover,
+.add-to-cart-main:hover {
+    background-color: var(--dark-primary-color, #5a7d45);
+    /* Darken the primary color */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+/* 💡 FIX for Buy Now Button: Add hover styles for secondary-button */
+.secondary-button:hover,
+.buy-now-btn:hover {
+    background-color: var(--primary-color, #6a994e);
+    /* Use primary color for fill */
+    color: var(--white-color, white);
+    /* Change text to white */
+    border-color: var(--primary-color, #6a994e);
+    /* Keep border consistent */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }

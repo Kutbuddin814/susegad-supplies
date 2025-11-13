@@ -58,7 +58,8 @@ function Header({ onLoginClick, onCartClick }) {
                                     <h4>Welcome, {user.name || user.email.split('@')[0]}!</h4>
                                     <ul>
                                         <li><Link to="/profile" onClick={() => setMenuOpen(false)}>View Profile</Link></li>
-                                        <li><Link to="/order-history" onClick={() => setMenuOpen(false)}>Order History</Link></li>
+                                        {/* FIX: Corrected link path to /orders to match App.jsx route */}
+                                        <li><Link to="/orders" onClick={() => setMenuOpen(false)}>Order History</Link></li>
                                         <li><button onClick={() => { handleLogout(); setMenuOpen(false); }}>Logout</button></li>
                                     </ul>
                                 </div>

@@ -10,16 +10,18 @@
     align-items: flex-start;
 }
 
-.final-review-card, .payment-method-card {
+.final-review-card,
+.payment-method-card {
     background-color: var(--white-color);
     padding: 30px;
     border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
 }
 
 .review-section {
     margin-bottom: 20px;
 }
+
 .review-section h4 {
     margin-bottom: 10px;
     border-bottom: 1px solid #eee;
@@ -34,10 +36,12 @@
     cursor: pointer;
     transition: all 0.2s ease;
 }
+
 .payment-option:has(input:checked) {
     background-color: var(--secondary-color);
     border-color: var(--primary-color);
 }
+
 .payment-desc {
     font-size: 0.9rem;
     color: #777;
@@ -67,5 +71,7 @@
 }
 
 @media (max-width: 900px) {
-    .billing-layout { grid-template-columns: 1fr; }
+    .billing-layout {
+        grid-template-columns: 1fr;
+    }
 }

@@ -1,8 +1,10 @@
-import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+// FIX: Import all necessary hooks and components
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom"; 
 
 // CRITICAL STEP: Wrap your entire application in the AppProvider
-import { AppProvider } from "./context/AppContext.jsx";
+// FIX: We need useAppContext here as well, since AppRouter uses it.
+import { AppProvider, useAppContext } from "./context/AppContext.jsx"; 
 
 // ✅ Layout Components
 import Header from "./components/Header/Header.jsx";
@@ -10,6 +12,7 @@ import Footer from "./components/Footer/Footer.jsx";
 import CartSidebar from "./components/UI/CartSidebar.jsx";
 import LoginModal from "./components/Modals/LoginModal.jsx";
 import SignupModal from "./components/Modals/SignupModal.jsx";
+import CheckoutGuard from "./components/CheckoutGuard.jsx"; // IMPORT THE GUARD
 
 // ✅ Pages
 import HomePage from "./pages/HomePage/HomePage.jsx";
@@ -23,88 +26,108 @@ import BillingPage from "./pages/BillingPage/BillingPage.jsx";
 import ConfirmationPage from "./pages/ConfirmationPage/ConfirmationPage.jsx";
 import OrderHistoryPage from "./pages/OrderHistoryPage/OrderHistoryPage.jsx";
 
-function AppContent() {
-  // ✅ STATE for Login Signup + Cart Sidebar
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
+// Renamed the content component to AppRouter since it contains the routing logic
+function AppRouter() { 
+    // FIX: These hooks are now safely inside the BrowserRouter context (thanks to the App component wrapper)
+    const { cart } = useAppContext(); 
+    const location = useLocation();
+    
+    // ✅ STATE for Login Signup + Cart Sidebar
+    const [showLogin, setShowLogin] = useState(false);
+    const [showSignup, setShowSignup] = useState(false);
+    const [cartOpen, setCartOpen] = useState(false);
 
-  return (
-    <BrowserRouter>
+    // This check is a failsafe against global redirects
+    useEffect(() => {
+        // This prevents external components from redirecting if the user successfully made it to /confirmation
+        if (cart?.items?.length === 0 && location.pathname === '/confirmation') {
+            return;
+        }
+    }, [cart, location.pathname]);
 
-      {/* ✅ Header needs props */}
-      <Header
-        onLoginClick={() => setShowLogin(true)}
-        onCartClick={() => setCartOpen(true)}
-      />
 
-      {/* ✅ Cart Sidebar */}
-      <CartSidebar open={cartOpen} onClose={() => setCartOpen(false)} />
+    return (
+        // Using a Fragment since BrowserRouter is outside
+        <> 
+            {/* ✅ Header needs props */}
+            <Header
+                onLoginClick={() => setShowLogin(true)}
+                onCartClick={() => setCartOpen(true)}
+            />
 
-      {/* ✅ Login Modal */}
-      <LoginModal
-        isOpen={showLogin}
-        onClose={() => setShowLogin(false)}
-        onSwitchToSignup={() => {
-          setShowLogin(false);
-          setShowSignup(true);
-        }}
-      />
+            {/* ✅ Cart Sidebar */}
+            <CartSidebar open={cartOpen} onClose={() => setCartOpen(false)} />
 
-      {/* ✅ Signup Modal */}
-      <SignupModal
-        isOpen={showSignup}
-        onClose={() => setShowSignup(false)}
-        onSwitchToLogin={() => {
-          setShowSignup(false);
-          setShowLogin(true);
-        }}
-      />
+            {/* ✅ Login Modal */}
+            <LoginModal
+                isOpen={showLogin}
+                onClose={() => setShowLogin(false)}
+                onSwitchToSignup={() => {
+                    setShowLogin(false);
+                    setShowSignup(true);
+                }}
+            />
 
-      <Routes>
+            {/* ✅ Signup Modal */}
+            <SignupModal
+                isOpen={showSignup}
+                onClose={() => setShowSignup(false)}
+                onSwitchToLogin={() => {
+                    setShowSignup(false);
+                    setShowLogin(true);
+                }}
+            />
 
-        {/* ✅ Redirect "/" → "/shop" */}
-        <Route path="/" element={<Navigate to="/shop" replace />} />
+            <Routes>
 
-        {/* ✅ Homepage */}
-        <Route path="/shop" element={<HomePage />} />
+                {/* ✅ Redirect "/" → "/shop" */}
+                <Route path="/" element={<Navigate to="/shop" replace />} />
 
-        {/* ✅ Product pages */}
-        <Route path="/products" element={<ProductsPage />} />
-        <Route path="/product/:id" element={<ProductDetailPage />} />
+                {/* ✅ Homepage */}
+                <Route path="/shop" element={<HomePage />} />
 
-        {/* ✅ Search */}
-        <Route path="/search" element={<SearchResultsPage />} />
+                {/* ✅ Product pages */}
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/product/:id" element={<ProductDetailPage />} />
 
-        {/* ✅ User profile */}
-        <Route path="/profile" element={<ProfilePage />} />
+                {/* ✅ Search */}
+                <Route path="/search" element={<SearchResultsPage />} />
 
-        {/* ✅ Contact */}
-        <Route path="/contact" element={<ContactPage />} />
+                {/* ✅ User profile */}
+                <Route path="/profile" element={<ProfilePage />} />
 
-        {/* ✅ Checkout flow */}
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/billing" element={<BillingPage />} />
-        <Route path="/confirmation" element={<ConfirmationPage />} />
+                {/* ✅ Contact */}
+                <Route path="/contact" element={<ContactPage />} />
 
-        {/* ✅ Orders */}
-        <Route path="/orders" element={<OrderHistoryPage />} />
+                {/* 💥 CHECKOUT FLOW: Wrapped in guard */}
+                <Route element={<CheckoutGuard />}>
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/billing" element={<BillingPage />} />
+                </Route>
 
-        {/* ✅ Fallback */}
-        <Route path="*" element={<Navigate to="/shop" replace />} />
-      </Routes>
+                {/* ✅ CONFIRMATION MUST BE OUTSIDE THE GUARD */}
+                <Route path="/confirmation" element={<ConfirmationPage />} />
 
-      <Footer />
+                {/* ✅ Orders */}
+                <Route path="/orders" element={<OrderHistoryPage />} />
 
-    </BrowserRouter>
-  );
+                {/* ✅ Fallback */}
+                <Route path="*" element={<Navigate to="/shop" replace />} />
+            </Routes>
+
+            <Footer />
+        </>
+    );
 }
 
-// Wrapper component to provide the context
+// Wrapper component to provide the context and the router
 function App() {
     return (
         <AppProvider>
-            <AppContent />
+            {/* FIX: BrowserRouter now correctly wraps the component using routing hooks */}
+            <BrowserRouter>
+                <AppRouter />
+            </BrowserRouter>
         </AppProvider>
     )
 }

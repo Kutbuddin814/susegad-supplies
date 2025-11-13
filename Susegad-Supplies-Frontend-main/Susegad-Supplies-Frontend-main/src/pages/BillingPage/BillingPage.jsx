@@ -4,7 +4,7 @@ import { useAppContext } from '../../context/AppContext.jsx';
 import './BillingPage.css';
 
 function BillingPage() {
-    const { user, cart, showToast, API_URL, fetchCart } = useAppContext();
+    const { user, cart, showToast, checkout } = useAppContext();
     const navigate = useNavigate();
 
     const [shippingDetails, setShippingDetails] = useState(null);
@@ -17,16 +17,19 @@ function BillingPage() {
 
     useEffect(() => {
         const details = JSON.parse(localStorage.getItem('shippingDetails'));
-        if (!user || !details || !cart || cart.items.length === 0) {
+
+        if (!user || !details) {
             navigate('/checkout');
-        } else {
-            setShippingDetails(details);
-            const cartSubtotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const fee = details.shippingFee || 0;
-            setSubtotal(cartSubtotal);
-            setShippingFee(fee);
-            setTotal(cartSubtotal + fee);
+            return;
         }
+
+        setShippingDetails(details);
+        const cartSubtotal = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const fee = details.shippingFee || 0;
+        setSubtotal(cartSubtotal);
+        setShippingFee(fee);
+        setTotal(cartSubtotal + fee);
+
     }, [user, cart, navigate]);
 
     const handleCardInputChange = (e) => {
@@ -37,7 +40,7 @@ function BillingPage() {
     const handlePayment = async (e) => {
         e.preventDefault();
 
-        // Simple card validation
+        // Simple card validation (omitted for brevity)
         if (paymentMethod === 'Credit/Debit Card') {
             if (!cardDetails.number || !cardDetails.name || !cardDetails.expiry || !cardDetails.cvc) {
                 showToast("Please fill in all card details.", "error");
@@ -53,33 +56,22 @@ function BillingPage() {
             }
         }
 
-        try {
-            const res = await fetch(`${API_URL}/checkout`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userEmail: user.email,
-                    shippingAddress: shippingDetails,
-                    shippingMethod: shippingDetails.shippingMethod,
-                    totalAmount: total,
-                    paymentMethod
-                })
-            });
+        const orderDetails = {
+            total: total,
+            address: shippingDetails,
+            paymentMethod: paymentMethod,
+            itemsOverride: cart.items
+        };
 
-            const data = await res.json();
+        const { ok } = await checkout(orderDetails);
 
-            if (res.ok) {
-                const confirmedOrder = data.order || data;
-                localStorage.setItem('confirmedOrder', JSON.stringify(confirmedOrder));
-                localStorage.removeItem('shippingDetails');
-                await fetchCart();
-                navigate('/confirmation');
-            } else {
-                showToast(data.message || "Order failed. Please try again.", "error");
-            }
-        } catch (err) {
-            console.error("Checkout error:", err);
-            showToast("Could not place order. Server error.", "error");
+        if (ok) {
+            localStorage.removeItem('shippingDetails');
+
+            // Add a short delay to ensure the toast renders before navigating.
+            setTimeout(() => {
+                navigate('/confirmation', { replace: true });
+            }, 50);
         }
     };
 
@@ -96,16 +88,16 @@ function BillingPage() {
                             <h4>Shipping To:</h4>
                             <div id="review-shipping-address">
                                 <p><strong>{shippingDetails.fullName}</strong></p>
-                                <p>{shippingDetails.address},</p>
+                                <p>{shippingDetails.street},</p>
                                 <p>{shippingDetails.city}, {shippingDetails.pincode}</p>
                             </div>
                         </div>
                         <div className="review-section">
                             <h4>Items:</h4>
                             <div id="review-items-container">
-                                {cart.items.map(item => (
+                                {cart?.items?.map(item => (
                                     <div className="summary-item" key={item.productId}>
-                                        <span>{item.name}</span>
+                                        <span>{item.productName} x {item.quantity}</span>
                                         <strong>₹{item.price * item.quantity}</strong>
                                     </div>
                                 ))}
@@ -121,19 +113,30 @@ function BillingPage() {
                     <div className="payment-method-card">
                         <h3>Payment Method</h3>
                         <form id="payment-form" onSubmit={handlePayment}>
-                            <div className="payment-option">
-                                <input type="radio" id="cod" name="paymentMethod" value="Cash on Delivery"
-                                    checked={paymentMethod === 'Cash on Delivery'}
-                                    onChange={e => setPaymentMethod(e.target.value)} />
-                                <label htmlFor="cod">Cash on Delivery (COD)</label>
-                                <p className="payment-desc">Pay with cash when your order arrives.</p>
+                            {/* 🟢 COD OPTION: Updated structure to make the whole card clickable */}
+                            <div className="payment-option" onClick={() => setPaymentMethod('Cash on Delivery')}>
+                                <label htmlFor="cod" className="payment-option-content">
+                                    <input type="radio" id="cod" name="paymentMethod" value="Cash on Delivery"
+                                        checked={paymentMethod === 'Cash on Delivery'}
+                                        onChange={e => setPaymentMethod(e.target.value)} />
+                                    <div>
+                                        <span className="payment-title">Cash on Delivery (COD)</span>
+                                        <p className="payment-desc">Pay with cash when your order arrives.</p>
+                                    </div>
+                                </label>
                             </div>
-                            <div className="payment-option">
-                                <input type="radio" id="card" name="paymentMethod" value="Credit/Debit Card"
-                                    checked={paymentMethod === 'Credit/Debit Card'}
-                                    onChange={e => setPaymentMethod(e.target.value)} />
-                                <label htmlFor="card">Credit / Debit Card</label>
-                                <p className="payment-desc">Pay securely with your card (Simulation only).</p>
+
+                            {/* 🟢 CARD OPTION: Updated structure to make the whole card clickable */}
+                            <div className="payment-option" onClick={() => setPaymentMethod('Credit/Debit Card')}>
+                                <label htmlFor="card" className="payment-option-content">
+                                    <input type="radio" id="card" name="paymentMethod" value="Credit/Debit Card"
+                                        checked={paymentMethod === 'Credit/Debit Card'}
+                                        onChange={e => setPaymentMethod(e.target.value)} />
+                                    <div>
+                                        <span className="payment-title">Credit / Debit Card</span>
+                                        <p className="payment-desc">Pay securely with your card (Simulation only).</p>
+                                    </div>
+                                </label>
                             </div>
 
                             {paymentMethod === 'Credit/Debit Card' && (

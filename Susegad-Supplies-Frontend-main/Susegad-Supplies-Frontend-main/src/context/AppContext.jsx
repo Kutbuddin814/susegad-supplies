@@ -5,11 +5,9 @@ export const useAppContext = () => useContext(AppContext);
 
 // Helper function to safely read environment variables (resolves compiler warnings)
 const getApiUrl = () => {
-  // Check if VITE_API_BASE_URL is set (usually true when running locally with npm run dev)
   if (typeof import.meta !== 'undefined' && import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL; // Returns http://localhost:5000
+    return import.meta.env.VITE_API_BASE_URL;
   }
-  // Fallback to the deployed production URL
   return "https://susegad-supplies.onrender.com";
 };
 
@@ -21,7 +19,6 @@ async function jsonFetch(url, options = {}) {
     headers: { "Content-Type": "application/json" },
     ...options,
   });
-  // If server returned non-JSON, avoid crashing
   let data = null;
   try {
     data = await res.json();
@@ -29,6 +26,7 @@ async function jsonFetch(url, options = {}) {
     data = null;
   }
   if (!res.ok) {
+    // If the request fails, check for a detailed message from the server
     const msg =
       (data && (data.message || data.error)) ||
       `Request failed (${res.status})`;
@@ -81,7 +79,6 @@ export const AppProvider = ({ children }) => {
         method: "POST",
         body: JSON.stringify({ name, email, password }),
       });
-      // Auto-login UX: set user right away
       setUser({ name, email });
       showToast("Sign up successful!", "success");
       return true;
@@ -100,7 +97,6 @@ export const AppProvider = ({ children }) => {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
-      // backend returns { message, user: { name, email } }
       const u = data?.user || { email };
       setUser(u);
       showToast("Logged in!", "success");
@@ -123,7 +119,6 @@ export const AppProvider = ({ children }) => {
     if (!user?.email) return;
     try {
       const data = await jsonFetch(`${API_URL}/shop/cart/${user.email}`);
-      // backend returns { email, items: [...] } or fallback
       setCart({
         email: data?.email || user.email,
         items: Array.isArray(data?.items) ? data.items : [],
@@ -171,12 +166,10 @@ export const AppProvider = ({ children }) => {
   const removeFromCart = async (productId) => {
     if (!user?.email) return false;
     try {
-      await jsonFetch(
-        `${API_URL}/shop/cart/remove/${encodeURIComponent(
-          user.email
-        )}/${encodeURIComponent(productId)}`,
-        { method: "DELETE" }
-      );
+      const url = `${API_URL}/shop/cart/remove/${encodeURIComponent(user.email)}/${encodeURIComponent(productId)}`;
+
+      await jsonFetch(url, { method: "DELETE" });
+
       await fetchCart();
       showToast("Removed from cart");
       return true;
@@ -186,21 +179,43 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const checkout = async ({ itemsOverride, total }) => {
+  const checkout = async (orderDetails) => {
     if (!user?.email) {
       showToast("Please login to checkout.", "error");
       return { ok: false };
     }
-    const items = itemsOverride || cart.items || [];
+    const items = orderDetails.itemsOverride || cart.items || [];
+
     try {
+      // ✅ FIX 1: Set a flag before clearing state to bypass the CheckoutGuard temporarily
+      localStorage.setItem('checkoutSuccessFlag', 'true');
+
       const data = await jsonFetch(`${API_URL}/shop/checkout`, {
         method: "POST",
-        body: JSON.stringify({ email: user.email, items, total }),
+        body: JSON.stringify({
+          userEmail: user.email,
+          items: items,
+          totalAmount: orderDetails.total,
+          shippingAddress: orderDetails.address,
+          paymentMethod: orderDetails.paymentMethod
+        }),
       });
-      await fetchCart(); // cart is cleared server-side
-      showToast("Order placed!", "success");
+
+      // Save the confirmed order to localStorage before the cart is cleared
+      if (data.order) {
+        localStorage.setItem('confirmedOrder', JSON.stringify({ order: data.order }));
+      }
+
+      await fetchCart(); // Clears the cart state
+
+      // ✅ FIX 2: Clear the flag immediately after the cart state is updated
+      localStorage.removeItem('checkoutSuccessFlag');
+
+      showToast("Order placed!", "success"); // Toast fires here
       return { ok: true, order: data?.order || null };
     } catch (err) {
+      // Clear the flag if the checkout failed, ensuring the guard works for errors
+      localStorage.removeItem('checkoutSuccessFlag');
       showToast(err.message || "Checkout failed", "error");
       return { ok: false };
     }
@@ -214,29 +229,20 @@ export const AppProvider = ({ children }) => {
 
   const value = {
     API_URL,
-
     loading,
-
-    // data
     products,
     categories,
     cart,
     user,
-
-    // auth
     signup,
     login,
     handleLogout,
     setUser,
-
-    // cart ops
     fetchCart,
     addToCart,
     updateCartItem,
     removeFromCart,
     checkout,
-
-    // misc
     setCart,
     showToast,
   };
