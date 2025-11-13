@@ -1,244 +1,132 @@
-/* --- Susegad Supplies Order History Styles (Invoice Snippet Look) --- */
+/* --- Simple Order Card Replication CSS --- */
 
 :root {
-    --susegad-green: #6A994E;
-    --susegad-light-green: #A7C957;
-    --susegad-dark-green: #386641;
+    /* Define colors from the image example */
+    --order-header-bg: #e5f5df; /* The specific light green color from the example */
+    --order-border-color: #d1e7dd; /* Subtly darker green/grey border */
+    --text-dark-green: #386641; /* Dark text for header */
+    --text-primary: #222; /* Darker text for item name */
+    --text-medium: #555;
     --white-color: #fff;
-    --processing-color: #f7b267; 
-    --shipped-color: #5bc0de;
-    --delivered-color: var(--susegad-green);
-    --bg-light: #f3f7ef; /* Lighter background for the summary panel */
-    --text-primary-dark: #222;
-    --text-secondary-light: #777;
-    --border-color-light: #d0d0d0;
+    --primary-green: #6A994E;
+
+    /* Status Colors (Not visible in image, but kept for status label) */
+    --status-delivered: #5cb85c;
+    --status-processing: #f0ad4e; 
+    --status-shipped: #337ab7;
 }
 
-/* ------------------------------------------------ */
-/* 1. Global Page Structure and Card Base */
-/* ------------------------------------------------ */
-
 #order-history-page .container {
-    max-width: 1000px; 
+    max-width: 650px; /* Tighter container width to match example */
     margin: 0 auto;
+    padding: 20px 0;
 }
 
 .page-title {
-    margin-bottom: 40px;
-    font-weight: 800;
-    color: var(--susegad-dark-green);
     text-align: center;
-    letter-spacing: 1px;
+    margin-bottom: 40px;
+    font-size: 2rem;
+    color: var(--text-dark-green);
 }
 
 .order-card-container {
-    margin-bottom: 30px; 
+    margin-bottom: 30px; /* Spacing between cards */
 }
 
 .order-card {
-    /* Main container uses flex to split Left (Summary) and Right (Details) panels */
-    display: flex; 
-    background: var(--white-color);
-    border: 1px solid var(--border-color-light); 
-    border-radius: 10px; 
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
-    transition: all 0.2s ease-in-out;
+    border: 1px solid var(--order-border-color);
+    /* Softly rounded corners */
+    border-radius: 8px;
     overflow: hidden;
-}
-
-.order-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    background: var(--white-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Very subtle shadow */
 }
 
 /* ------------------------------------------------ */
-/* 2. Left Panel: Order Summary & Status (The "Receipt Header") */
+/* 1. HEADER ROW STYLING (Top Panel) */
 /* ------------------------------------------------ */
 
-.order-summary-panel {
-    flex: 0 0 260px; /* Fixed, defined width for the summary column */
-    background: var(--bg-light); 
-    padding: 25px;
-    border-right: 2px dashed var(--border-color-light); /* Dashed Divider for receipt feel */
-    position: relative;
+.order-header-simple {
+    /* Background color from image example: light mint green */
+    background-color: var(--order-header-bg);
+    
     display: flex;
-    flex-direction: column;
-    gap: 15px; /* Increased space between groups */
-}
-
-/* Status Badge/Header */
-.order-status-badge {
-    padding: 6px 12px; /* Slightly larger padding */
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--white-color);
-    text-transform: uppercase;
-    border-radius: 5px;
-    width: fit-content;
-    margin-bottom: 5px;
-}
-.status-delivered .order-status-badge { background-color: var(--delivered-color); }
-.status-shipped .order-status-badge { background-color: var(--shipped-color); }
-.status-processing .order-status-badge { background-color: var(--processing-color); }
-
-.meta-group {
-    padding-top: 5px;
-}
-
-.meta-group .label {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--text-secondary-light);
-    text-transform: uppercase;
-    font-weight: 500;
-    margin-bottom: 3px;
-    letter-spacing: 0.8px; /* Added spacing to uppercase label */
-}
-
-.meta-group .value {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary-dark);
-}
-
-.id-group .value {
-    font-size: 1.1rem; /* Slightly smaller than before */
-    color: var(--susegad-dark-green);
-    letter-spacing: 0.5px;
-}
-
-/* ------------------------------------------------ */
-/* 3. Right Panel: Total & Item Details (The "Body") */
-/* ------------------------------------------------ */
-
-.order-details-panel {
-    flex-grow: 1;
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
     justify-content: space-between;
+    align-items: center;
+    
+    /* Increased horizontal and vertical padding for internal space */
+    padding: 12px 18px; 
 }
 
-/* Total Amount Display - Mimics a strong price bar */
-.total-amount-display {
-    text-align: right;
-    padding: 10px 0; /* Reduced padding */
-    border-top: 2px solid var(--susegad-light-green); 
-    border-bottom: 2px solid var(--susegad-light-green);
-    margin: 10px 0 20px 0;
-}
-
-.total-amount-display .label {
-    /* Ensure label is prominent */
-    font-size: 0.9rem; 
-    color: var(--text-primary-dark);
-    text-transform: uppercase;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 5px;
-}
-
-.total-amount-display .value {
-    color: var(--susegad-dark-green);
-    font-size: 2.2rem; /* Adjusted for cleaner look */
-    font-weight: 900;
-}
-
-
-/* Item Details Dropdown - Placement and styling for the items list */
-.order-items-dropdown {
-    margin-top: auto; 
-}
-
-.order-items-dropdown summary {
-    font-weight: 700;
-    color: var(--susegad-dark-green);
-    cursor: pointer;
-    list-style: none;
-    font-size: 1rem;
-    padding: 10px 0;
-    border-bottom: 1px dashed var(--border-color-light); 
-    margin-bottom: 10px;
-}
-.order-items-dropdown[open] summary {
-    border-bottom: none;
-}
-.order-items-dropdown summary::before {
-    /* Use a simple arrow icon */
-    content: '▶';
-    margin-right: 12px;
-    font-size: 0.7rem;
-    transition: transform 0.2s;
-    display: inline-block;
-    color: var(--susegad-green);
-}
-.order-items-dropdown[open] summary::before {
-    content: '▼';
-}
-
-.item-details-content {
-    margin-top: 0;
-    padding: 10px 0;
-}
-
-/* Item List Grid - THE CORE VISUAL CHANGE */
-.order-item {
-    display: grid;
-    /* Columns: Product Name (Auto) | Quantity (Fixed) | Price (Fixed) */
-    grid-template-columns: 2fr 70px 90px; 
-    gap: 15px;
-    padding: 10px 0; /* Increased vertical padding for space between rows */
-    border-bottom: 1px dotted #e0e0e0; 
+.order-meta {
     font-size: 0.95rem;
-}
-.order-item:last-child {
-    border-bottom: none;
-}
-
-.order-item-name {
-    font-weight: 500;
-    color: var(--text-primary-dark);
+    font-weight: 600; 
+    color: var(--text-dark-green); /* Dark green text */
 }
 
-.order-item-quantity {
-    color: var(--text-secondary-light);
-    text-align: center;
+.order-total-display {
+    font-weight: 700; /* Total should be the boldest */
+}
+
+
+/* ------------------------------------------------ */
+/* 2. ITEM BODY STYLING (Bottom Panel) */
+/* ------------------------------------------------ */
+
+.order-item-list-simple {
+    /* Increased padding inside the item area */
+    padding: 15px 18px; 
+}
+
+.order-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    /* Good vertical padding for separation */
+    padding: 8px 0; 
+    font-size: 1rem;
+}
+
+.item-name {
+    /* Product name is dark and slightly bolder */
+    font-weight: 500; 
+    color: var(--text-primary);
+}
+
+.item-quantity {
+    /* Quantity is less prominent (lighter and slightly smaller) */
+    font-weight: 400;
+    color: var(--text-medium);
+    font-size: 0.95rem; 
+}
+
+/* Status label placed inside the list for visual cue (Optional/Hidden in example) */
+.status-label-simple {
+    display: block;
+    width: fit-content;
+    padding: 4px 8px;
+    margin-top: 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
     font-weight: 600;
 }
+.status-delivered { background-color: var(--status-delivered); color: var(--white-color); }
+.status-processing { background-color: var(--status-processing); color: var(--white-color); }
+.status-shipped { background-color: var(--status-shipped); color: var(--white-color); }
 
-.order-item-price {
-    font-weight: 700;
-    color: var(--susegad-dark-green);
-    text-align: right;
-}
-
-/* ------------------------------------------------ */
-/* 4. Mobile Adjustments */
-/* ------------------------------------------------ */
-
-@media (max-width: 768px) {
-    .order-card {
-        flex-direction: column; /* Stack the summary and details panel */
+/* Mobile Stack */
+@media (max-width: 480px) {
+    .order-header-simple {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
     }
-    
-    .order-summary-panel {
-        flex: none; /* Allows the panel to take full width */
-        width: 100%;
-        border-right: none;
-        border-bottom: 2px dashed var(--border-color-light); /* Move the dashed divider to the bottom */
-        padding: 20px;
-        gap: 10px;
+    .order-total-display {
+        margin-top: 5px;
+        align-self: flex-end; /* Push total to the right on small screens */
     }
-    
-    .order-details-panel {
-        padding: 20px;
-    }
-    
-    .total-amount-display {
-        text-align: left; /* Align total to the left on mobile for easy reading */
-        font-size: 1.5rem;
-    }
-    .total-amount-display .value {
-        font-size: 2rem;
+    .order-item-list-simple {
+        padding: 10px 15px;
     }
 }

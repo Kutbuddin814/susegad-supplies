@@ -3,6 +3,7 @@ import { useAppContext } from '../../context/AppContext.jsx';
 
 // Function to generate a simple mock status (kept for consistency)
 const getOrderStatus = (orderId) => {
+    // This function can be simplified if the status comes directly from the API (order.status)
     const lastDigit = parseInt(orderId.toString().slice(-1));
     if (lastDigit % 3 === 0) return { label: 'Delivered', class: 'delivered' };
     if (lastDigit % 3 === 1) return { label: 'Shipped', class: 'shipped' };
@@ -47,10 +48,10 @@ function OrderHistoryPage() {
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
         // Format: 08/11/2025
-        return new Date(dateString).toLocaleDateString('en-GB');
+        return new Date(dateString).toLocaleDateString('en-GB'); 
     };
     
-    // Helper function for currency formatting (assuming ₹ symbol needed)
+    // Helper function for currency formatting 
     const formatCurrency = (amount) => {
         if (isNaN(amount)) return '₹0.00';
         return `₹${parseFloat(amount).toFixed(2)}`;
@@ -65,9 +66,11 @@ function OrderHistoryPage() {
                 {!loading && user && orders.length === 0 && <p className="message-center">You have no past orders.</p>}
 
                 {!loading && user && orders.length > 0 && orders.map((order, index) => {
+                    // Note: If order.status is available from API, use it instead of mock
                     const status = getOrderStatus(order.orderNumber || order._id);
                     const orderDateString = formatDate(order.orderDate);
                     const orderTotal = parseFloat(order.totalAmount || 0);
+                    const firstItem = order.items[0] || { productName: 'Item Missing', quantity: 0 };
 
                     return (
                         <div className="order-card-container" key={order._id}>
@@ -79,20 +82,14 @@ function OrderHistoryPage() {
                                     <span className="order-meta order-total-display">Total: {formatCurrency(orderTotal)}</span>
                                 </div>
 
-                                {/* 🌟 2. ITEM BODY 🌟 */}
+                                {/* 🌟 2. ITEM BODY (First Product Summary) 🌟 */}
                                 <div className="order-item-list-simple">
-                                    {order.items.map(item => (
-                                        <div className="order-item-row" key={item.productId}>
-                                            <span className="item-name">{item.productName || item.name}</span>
-                                            <span className="item-quantity">Qty: {item.quantity}</span>
-                                            {/* Optional: Show individual item price if desired */}
-                                            {/* <span className="item-price">₹{(item.price * item.quantity).toFixed(2)}</span> */}
-                                        </div>
-                                    ))}
-                                    
-                                    {/* Display Status Separately (e.g., if needed visually outside the item list) */}
-                                    <div className={`status-label-simple status-${status.class}`}>{status.label}</div>
+                                    <div className="order-item-row" key={firstItem.productId || 'summary'}>
+                                        <span className="item-name">{firstItem.productName || firstItem.name}</span>
+                                        <span className="item-quantity">Qty: {firstItem.quantity}</span>
+                                    </div>
                                 </div>
+                                
                             </div>
                         </div>
                     );
