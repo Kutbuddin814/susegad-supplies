@@ -3,27 +3,39 @@
     let API;
     const hostname = window.location.hostname;
 
-    // Determines if the app is running locally (default) or deployed (Render/web.app)
-    // Note: Use your confirmed Render URL and Vercel hostname here.
+    // Use the confirmed Render Backend URL for deployed environments
     if (hostname.includes('vercel.app') || hostname.includes('onrender.com')) {
-        // Use your confirmed Render Backend URL
         API = "https://susegad-supplies-8jx5.onrender.com"; 
     } else {
         API = "http://localhost:5000";
     }
 
-    // Auth guard
-    const me = JSON.parse(localStorage.getItem("adminUser") || "null");
-    if (!me) {
+    try {
+        // Auth guard logic
+        const me = JSON.parse(localStorage.getItem("adminUser") || "null");
+        const isLoginPage = window.location.href.includes('admin-login.html');
+
+        // Case 1: User is NOT logged in, but is NOT on the login page -> REDIRECT to login
+        if (!me && !isLoginPage) {
+            window.location.href = "admin-login.html"; 
+            return;
+        }
+        
+        // Case 2: User IS logged in, but is on the login page -> REDIRECT to dashboard
+        if (me && isLoginPage) {
+            window.location.href = "admin.html";
+            return;
+        }
+
+    } catch (e) {
+        // Handle rare cases where localStorage access fails or parsing is broken
+        console.error("Auth Guard Error:", e);
         window.location.href = "admin-login.html";
         return;
     }
-
+    
     // 🛑 REMOVED: productsRefreshInterval
-    // 🟢 Global variable to hold the full product list cache for filtering
-    let allProductsCache = [];
-
-    // 🛑 REMOVED: stopRefresh function
+    let allProductsCache = []; // Global variable to hold the full product list cache for filtering
 
     // Tabs
     const tabs = {
@@ -39,14 +51,10 @@
             Object.values(tabs).forEach(el => el.classList.add("hidden"));
             tabs[btn.dataset.tab].classList.remove("hidden");
 
-            // 🛑 REMOVED: stopRefresh() call
-
             // Reload tab content on switch
             if (btn.dataset.tab === 'products') {
-                // 🟢 CRITICAL: Clear search cache to ensure data is fetched from API
                 allProductsCache = [];
                 loadProducts();
-                // 🛑 REMOVED: productsRefreshInterval = setInterval(loadProducts, 5000);
             } else {
                 if (btn.dataset.tab === 'categories') loadCategories();
                 if (btn.dataset.tab === 'orders') loadOrders();
@@ -57,7 +65,6 @@
     // Logout
     document.getElementById("logoutBtn").addEventListener("click", () => {
         localStorage.removeItem("adminUser");
-        // 🛑 REMOVED: stopRefresh() call
         window.location.href = "admin-login.html";
     });
 
@@ -73,7 +80,6 @@
         imageUrl: document.getElementById("p_imageUrl"),
         desc: document.getElementById("p_desc")
     };
-    // 🟢 Search input reference
     const productSearchInput = document.getElementById("productSearch");
 
     // Helper function to render product table from a given array
@@ -159,14 +165,12 @@
     pTbody.addEventListener("click", async (e) => {
         const id = e.target.dataset.id;
         if (e.target.classList.contains("edit")) {
-            // UX Improvement: Show loading while fetching single product details
             pTbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 10px;">Loading details...</td></tr>';
 
-            // Fetches data using the existing cache logic
             const res = await fetch(`${API}/admin/products`);
             const all = await res.json();
             const p = all.find(x => x._id === id);
-            if (!p) { loadProducts(); return; } // Reload if product not found
+            if (!p) { loadProducts(); return; } 
 
             pFields.id.value = p._id;
             pFields.name.value = p.name || "";
@@ -177,12 +181,12 @@
             pFields.desc.value = p.description || "";
 
             document.querySelector('[data-tab="products"]').click();
-            loadProducts(); // Re-render the full list after getting data
+            loadProducts(); 
         }
         if (e.target.classList.contains("del")) {
             if (!confirm("Delete product?")) return;
             await fetch(`${API}/admin/products/${id}`, { method: "DELETE" });
-            allProductsCache = []; // Clear cache to force fresh data fetch on next load
+            allProductsCache = []; 
             loadProducts();
         }
     });
@@ -195,8 +199,6 @@
     // ---------- CATEGORIES ----------
     const cTbody = document.querySelector("#categoriesTable tbody");
     async function loadCategories() {
-        // 🛑 REMOVED: stopRefresh() call
-        // UX Fix: Show loading state before fetch
         cTbody.innerHTML = '<tr><td colspan="1" style="text-align:center; padding: 20px;">Loading categories...</td></tr>';
 
         const res = await fetch(`${API}/admin/categories`);
@@ -218,7 +220,6 @@
     const oTbody = document.querySelector("#ordersTable tbody");
 
     const createStatusButtons = (orderId, currentStatus) => {
-        // Statuses available for update
         const statuses = ["Processing", "Shipped", "Delivered"];
         const html = statuses.map(status => {
             if (status.toLowerCase() !== currentStatus.toLowerCase()) {
@@ -229,12 +230,9 @@
         return html;
     };
 
-    // Helper function to extract product names for display
     const getProductSummary = (items) => {
         if (!items || items.length === 0) return 'No Items';
-
         const names = items.map(item => item.productName || item.name).filter(n => n).slice(0, 2).join(', ');
-
         if (items.length > 2) {
             return `${names} +${items.length - 2} more`;
         }
@@ -243,18 +241,13 @@
 
 
     async function loadOrders() {
-        // 🛑 REMOVED: stopRefresh() call
-        // UX Fix: Show loading state before fetch
         oTbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">Loading orders...</td></tr>';
 
         const res = await fetch(`${API}/admin/orders`);
         const items = await res.json();
         oTbody.innerHTML = items.map((o, idx) => {
             const orderId = o._id;
-            // FIX: Default to "Processing" for consistency
             const currentStatus = o.status || "Processing";
-
-            // Get Name: Attempt to get full name from shipping address or default to email prefix
             const customerName = o.shippingAddress ? o.shippingAddress.fullName : o.userEmail.split('@')[0];
 
             return `
@@ -273,7 +266,7 @@
         }).join("");
     }
 
-    // 🎯 EVENT LISTENER: Handle status button clicks (must be inside the scope)
+    // 🎯 EVENT LISTENER: Handle status button clicks
     oTbody.addEventListener("click", async (e) => {
         if (e.target.classList.contains("status-update")) {
             const id = e.target.dataset.id;
@@ -290,7 +283,7 @@
 
                 if (res.ok) {
                     alert(`Status updated to ${newStatus}.`);
-                    loadOrders(); // Reload the table
+                    loadOrders(); 
                 } else {
                     const data = await res.json();
                     alert(`Failed to update status: ${data.message || res.status}`);
@@ -303,8 +296,18 @@
     });
 
 
-    // initial loads (Modified logic for non-auto-refresh)
-    loadProducts();
-    loadCategories();
-    loadOrders();
+    // initial loads (Run these once to populate the dashboard)
+    const activeTab = document.querySelector('.tablink.active');
+    
+    // Only load the content of the active tab first, and other data lazily.
+    if (activeTab) {
+        const tabId = activeTab.dataset.tab;
+        if (tabId === 'products') loadProducts();
+        else if (tabId === 'categories') loadCategories();
+        else if (tabId === 'orders') loadOrders();
+    } else {
+        // Fallback: Load products if no tab is active
+        loadProducts();
+    }
+
 })();
