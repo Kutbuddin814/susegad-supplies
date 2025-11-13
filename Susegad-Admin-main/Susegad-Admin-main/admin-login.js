@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const hostname = window.location.hostname;
 
   const API = (hostname.includes('onrender.com') || hostname === 'susegad-supplies-admin.web.app')
-    ? "https://susegad-supplies-8jx5.onrender.com"
+    ? "https://susegad-supplies-backend.onrender.com"
     : "http://localhost:5000";
 
   const form = document.getElementById("adminLoginForm");
