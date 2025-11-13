@@ -240,6 +240,31 @@ export default function shopRoutes(db) {
                 return res.status(404).json({ message: "Product not found during cart add" });
             }
 
+            // 🛑 CRITICAL BACKEND STOCK CHECK (New Logic)
+            const quantityToAdd = parseInt(quantity);
+            const currentStock = productDoc.stock || 0;
+            const cart = await db.collection("carts").findOne({ email });
+
+            // 1. Check stock when adding to existing quantity
+            if (cart) {
+                const existingIndex = cart.items.findIndex(i => i.productId === productId);
+                if (existingIndex !== -1) {
+                    const totalQuantityAfterAdd = cart.items[existingIndex].quantity + quantityToAdd;
+                    if (currentStock < totalQuantityAfterAdd) {
+                        return res.status(400).json({
+                            message: `Total quantity exceeds stock. Only ${currentStock} item(s) available.`
+                        });
+                    }
+                }
+            }
+            // 2. Check stock for a new item or if the cart is empty
+            if (currentStock < quantityToAdd) {
+                return res.status(400).json({
+                    message: `Cannot add. Only ${currentStock} item(s) are in stock.`
+                });
+            }
+            // ---------------------------------------------
+
             const variation = productDoc.variations ? productDoc.variations.find(v => v.size === variationSize) : null;
             // Use basePrice if variations field is missing or variation is not found
             const price = variation ? variation.price : productDoc.price || productDoc.basePrice;
@@ -248,10 +273,9 @@ export default function shopRoutes(db) {
                 productId,
                 productName: `${productDoc.name} (${variationSize || 'default'})`,
                 price: price,
-                quantity: parseInt(quantity),
+                quantity: quantityToAdd,
+                imageUrl: productDoc.imageUrl || null, // Include image URL for display
             };
-
-            const cart = await db.collection("carts").findOne({ email });
 
             if (!cart) {
                 await db.collection("carts").insertOne({ email, items: [cartItem] });
@@ -316,8 +340,6 @@ export default function shopRoutes(db) {
     });
 
     // 💥 CRITICAL: CHECKOUT / PLACE ORDER (Includes Inventory Decrement)
-    // shopRoutes.js (Inside router.post("/checkout"))
-
     router.post("/checkout", async (req, res) => {
         try {
             const {
@@ -364,7 +386,6 @@ export default function shopRoutes(db) {
                         console.warn(`[Inventory] Invalid ObjectId for item: ${baseProductId}. Skipping stock update.`);
                     }
                 } catch (e) {
-                    // Log the inventory failure but DO NOT crash the main transaction flow (prevents the 500 error)
                     console.error(`[Inventory] Database Error updating stock for product ${baseProductId}:`, e);
                 }
             }
