@@ -13,22 +13,23 @@ const PORT = process.env.PORT || 5000;
 
 // 🛑 DEFINITIVE CORS Configuration for Vercel/Render communication
 const allowedOrigins = [
-  "https://susegad-supplies-8jx5.onrender.com", // Your own Render domain
-  "https://susegad-supplies.vercel.app", // Your Vercel frontend domain (CRITICAL)
+  "https://susegad-supplies-8jx5.onrender.com", // Your Render backend domain
+  "https://susegad-supplies.vercel.app", // Your Main Vercel frontend domain
 
-  // 🌟 ADD THE ADMIN VERCEL DOMAIN HERE (CRITICAL FIX)
-  "https://susegad-supplies-ol2u.vercel.app",
+  // 🌟 CRITICAL FIX: The specific Admin Vercel Domain 🌟
+  "https://susegad-supplies-ol2u.vercel.app",
 
   // Local Development Origins
   "http://localhost:5174",
   "http://localhost:5173",
   "http://localhost:5000",
-  "http://localhost:5500"
+  "http://localhost:5500",
+  "http://127.0.0.1:5500" // Added for complete local loopback coverage
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g., Postman, server-to-server)
+    // Allow requests with no origin (e.g., Postman)
     if (!origin) return callback(null, true);
 
     // Check if the origin is in the allowed list or is a loopback IP
@@ -45,7 +46,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// 🌟 CRITICAL FIX: Explicitly handle preflight OPTIONS requests before routes are defined.
+// 🌟 CRITICAL FIX: Explicitly handle preflight OPTIONS requests 
 app.options('*', cors());
 
 
