@@ -9,6 +9,9 @@
     --shipped-color: #5bc0de;
     --delivered-color: var(--susegad-green);
     --bg-light: #f3f7ef; /* Lighter background for the summary panel */
+    --text-primary-dark: #222;
+    --text-secondary-light: #777;
+    --border-color-light: #d0d0d0;
 }
 
 /* ------------------------------------------------ */
@@ -33,11 +36,12 @@
 }
 
 .order-card {
+    /* Main container uses flex to split Left (Summary) and Right (Details) panels */
     display: flex; 
     background: var(--white-color);
-    border: 1px solid #c0c0c0; /* Slightly darker border */
-    border-radius: 10px; /* Reduced radius for a crisper look */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+    border: 1px solid var(--border-color-light); 
+    border-radius: 10px; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); 
     transition: all 0.2s ease-in-out;
     overflow: hidden;
 }
@@ -52,27 +56,26 @@
 /* ------------------------------------------------ */
 
 .order-summary-panel {
-    flex: 0 0 280px; /* Slimmer width */
+    flex: 0 0 260px; /* Fixed, defined width for the summary column */
     background: var(--bg-light); 
     padding: 25px;
-    border-right: 2px dashed #d0d0d0; /* **Dashed Divider** for a receipt look */
+    border-right: 2px dashed var(--border-color-light); /* Dashed Divider for receipt feel */
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px; /* Increased space between groups */
 }
 
 /* Status Badge/Header */
 .order-status-badge {
-    position: static; /* Positioned inline, not floating */
-    padding: 5px 10px;
-    font-size: 0.8rem;
+    padding: 6px 12px; /* Slightly larger padding */
+    font-size: 0.85rem;
     font-weight: 700;
     color: var(--white-color);
     text-transform: uppercase;
     border-radius: 5px;
     width: fit-content;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 .status-delivered .order-status-badge { background-color: var(--delivered-color); }
 .status-shipped .order-status-badge { background-color: var(--shipped-color); }
@@ -85,20 +88,21 @@
 .meta-group .label {
     display: block;
     font-size: 0.75rem;
-    color: #777;
+    color: var(--text-secondary-light);
     text-transform: uppercase;
     font-weight: 500;
     margin-bottom: 3px;
+    letter-spacing: 0.8px; /* Added spacing to uppercase label */
 }
 
 .meta-group .value {
     font-size: 1rem;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary-dark);
 }
 
 .id-group .value {
-    font-size: 1.2rem;
+    font-size: 1.1rem; /* Slightly smaller than before */
     color: var(--susegad-dark-green);
     letter-spacing: 0.5px;
 }
@@ -115,17 +119,19 @@
     justify-content: space-between;
 }
 
+/* Total Amount Display - Mimics a strong price bar */
 .total-amount-display {
     text-align: right;
-    padding: 15px 0;
-    border-top: 2px solid var(--susegad-light-green); /* Highlighted Total Bar */
+    padding: 10px 0; /* Reduced padding */
+    border-top: 2px solid var(--susegad-light-green); 
     border-bottom: 2px solid var(--susegad-light-green);
     margin: 10px 0 20px 0;
 }
 
 .total-amount-display .label {
-    font-size: 1rem;
-    color: #555;
+    /* Ensure label is prominent */
+    font-size: 0.9rem; 
+    color: var(--text-primary-dark);
     text-transform: uppercase;
     font-weight: 600;
     display: block;
@@ -134,15 +140,14 @@
 
 .total-amount-display .value {
     color: var(--susegad-dark-green);
-    font-size: 2.5rem; /* HUGE and impossible to miss */
+    font-size: 2.2rem; /* Adjusted for cleaner look */
     font-weight: 900;
 }
 
 
-/* Item Details Dropdown */
+/* Item Details Dropdown - Placement and styling for the items list */
 .order-items-dropdown {
     margin-top: auto; 
-    /* Remove padding to integrate better */
 }
 
 .order-items-dropdown summary {
@@ -152,7 +157,7 @@
     list-style: none;
     font-size: 1rem;
     padding: 10px 0;
-    border-bottom: 1px dashed #ccc; /* Dashed line for clean separation */
+    border-bottom: 1px dashed var(--border-color-light); 
     margin-bottom: 10px;
 }
 .order-items-dropdown[open] summary {
@@ -174,18 +179,16 @@
 .item-details-content {
     margin-top: 0;
     padding: 10px 0;
-    background: none; 
-    border: none;
 }
 
 /* Item List Grid - THE CORE VISUAL CHANGE */
 .order-item {
     display: grid;
-    /* Columns: Product Name | Quantity | Price */
-    grid-template-columns: 2fr 70px 80px; 
+    /* Columns: Product Name (Auto) | Quantity (Fixed) | Price (Fixed) */
+    grid-template-columns: 2fr 70px 90px; 
     gap: 15px;
-    padding: 8px 0;
-    border-bottom: 1px dotted #e0e0e0; /* Subtle item divider */
+    padding: 10px 0; /* Increased vertical padding for space between rows */
+    border-bottom: 1px dotted #e0e0e0; 
     font-size: 0.95rem;
 }
 .order-item:last-child {
@@ -194,11 +197,11 @@
 
 .order-item-name {
     font-weight: 500;
-    color: #444;
+    color: var(--text-primary-dark);
 }
 
 .order-item-quantity {
-    color: #777;
+    color: var(--text-secondary-light);
     text-align: center;
     font-weight: 600;
 }
@@ -207,4 +210,35 @@
     font-weight: 700;
     color: var(--susegad-dark-green);
     text-align: right;
+}
+
+/* ------------------------------------------------ */
+/* 4. Mobile Adjustments */
+/* ------------------------------------------------ */
+
+@media (max-width: 768px) {
+    .order-card {
+        flex-direction: column; /* Stack the summary and details panel */
+    }
+    
+    .order-summary-panel {
+        flex: none; /* Allows the panel to take full width */
+        width: 100%;
+        border-right: none;
+        border-bottom: 2px dashed var(--border-color-light); /* Move the dashed divider to the bottom */
+        padding: 20px;
+        gap: 10px;
+    }
+    
+    .order-details-panel {
+        padding: 20px;
+    }
+    
+    .total-amount-display {
+        text-align: left; /* Align total to the left on mobile for easy reading */
+        font-size: 1.5rem;
+    }
+    .total-amount-display .value {
+        font-size: 2rem;
+    }
 }
