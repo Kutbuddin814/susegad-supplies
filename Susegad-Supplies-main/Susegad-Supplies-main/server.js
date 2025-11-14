@@ -18,6 +18,7 @@ const allowedOrigins = [
 
   // CRITICAL FIX: The specific Admin Vercel Domain
   "https://susegad-supplies-pdtj.vercel.app",
+  "https://susegad-supplies-admin.onrender.com", // Your Admin Render frontend domain
 
   // Local Development Origins
   "http://localhost:5174",
