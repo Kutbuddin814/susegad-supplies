@@ -1,5 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
-
+(function () {
     // --- API CONFIGURATION ---
     let API;
     const hostname = window.location.hostname;
@@ -29,8 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper function to format price safely
     function formatPrice(value) {
         let priceString = String(value);
-        // Remove all non-numeric characters EXCEPT decimal point and hyphen
+
+        // 🌟 CRITICAL FIX: Remove all non-numeric characters EXCEPT decimal point and hyphen 🌟
         const cleanedString = priceString.replace(/[^0-9.-]/g, '');
+
         const numericValue = Number(cleanedString) || 0;
         
         return currencyFormatter.format(numericValue);
@@ -39,15 +40,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let allProductsCache = [];
 
-    // 🛑 DOM ELEMENTS DEFINED WITHIN DOMContentLoaded 🛑
-    
-    // CRITICAL FIX: Use the corrected IDs from the previous conversation (e.g., tab-products-content)
+    // Tabs
     const tabs = {
-        products: document.getElementById("tab-products-content"),
-        categories: document.getElementById("tab-categories-content"),
-        orders: document.getElementById("tab-orders-content")
+        products: document.getElementById("tab-products"),
+        categories: document.getElementById("tab-categories"),
+        orders: document.getElementById("tab-orders")
     };
-    const tabLinks = document.querySelectorAll(".tablink");
+
+    document.querySelectorAll(".tablink").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".tablink").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            Object.values(tabs).forEach(el => el.classList.add("hidden"));
+            tabs[btn.dataset.tab].classList.remove("hidden");
+
+            if (btn.dataset.tab === 'products') {
+                allProductsCache = [];
+                loadProducts();
+            } else {
+                if (btn.dataset.tab === 'categories') loadCategories();
+                if (btn.dataset.tab === 'orders') loadOrders();
+            }
+        });
+    });
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("adminUser");
+        window.location.href = "admin-login.html";
+    });
+
 
     // ---------- PRODUCTS ----------
     const pTbody = document.querySelector("#productsTable tbody");
@@ -61,58 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         desc: document.getElementById("p_desc")
     };
     const productSearchInput = document.getElementById("productSearch");
-
-    // ---------- CATEGORIES ----------
-    const cTbody = document.querySelector("#categoriesTable tbody");
-
-    // ---------- ORDERS ----------
-    const oTbody = document.querySelector("#ordersTable tbody");
-
-
-    // ---------------------------------
-    // --- EVENT LISTENERS (FIXED) ---
-    // ---------------------------------
-    
-    tabLinks.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const tabId = btn.dataset.tab;
-            
-            // 1. Update active class on buttons
-            tabLinks.forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            
-            // 2. Hide/Show content
-            Object.values(tabs).forEach(el => el.classList.add("hidden"));
-            if (tabs[tabId]) {
-                tabs[tabId].classList.remove("hidden");
-            }
-
-            // 3. Clear search filter when switching tabs
-            if (productSearchInput) {
-                productSearchInput.value = '';
-            }
-
-            // 4. Load data
-            if (tabId === 'products') {
-                allProductsCache = []; // Clear cache to force a reload on switch
-                loadProducts();
-            } else if (tabId === 'categories') {
-                loadCategories();
-            } else if (tabId === 'orders') {
-                loadOrders();
-            }
-        });
-    });
-
-    // Logout
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-        localStorage.removeItem("adminUser");
-        window.location.href = "admin-login.html";
-    });
-
-    // ---------------------------------
-    // --- FUNCTION DEFINITIONS ---
-    // ---------------------------------
 
     // Helper function to render product table from a given array
     function renderProducts(itemsToRender) {
@@ -145,15 +115,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch(`${API}/admin/products`);
                 const items = await res.json();
                 
+                // 🌟 CRITICAL FIX: PROCESS DATA BEFORE CACHING 🌟
                 const processedItems = items.map(p => {
                     let primaryPrice = p.price || p.basePrice || 0;
                     let primaryStock = p.stock || 0;
 
+                    // If variations exist, extract the price/stock from the first variation
                     if (p.variations && p.variations.length > 0) {
                         primaryPrice = p.variations[0].price || primaryPrice;
                         primaryStock = p.variations[0].stock || primaryStock;
                     }
                     
+                    // Return the object with standardized price/stock fields
                     return {
                         ...p, 
                         price: primaryPrice, 
@@ -161,7 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                 });
                 
-                allProductsCache = processedItems;
+                allProductsCache = processedItems; // Save processed data to cache
+                // ----------------------------------------------------
                 
             } catch (e) {
                 pTbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color: red;">Failed to load products. Check server connection.</td></tr>';
@@ -179,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProducts(filteredItems);
     }
 
-    // Products handlers
     document.getElementById("resetProduct").addEventListener("click", () => {
         pFields.id.value = "";
         pFields.name.value = "";
@@ -191,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById("saveProduct").addEventListener("click", async () => {
+        // Ensure data sent back is a number if possible by cleaning the input
         const cleanPrice = String(pFields.price.value).replace(/[^0-9.]/g, '');
         const cleanStock = String(pFields.stock.value).replace(/[^0-9]/g, '');
 
@@ -225,18 +199,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const p = all.find(x => x._id === id);
             if (!p) { loadProducts(); return; } 
             
+            // Re-fetch the price from the processed cache or load it cleanly here for the form input
             const processedP = allProductsCache.find(x => x._id === id) || p;
 
             pFields.id.value = p._id;
             pFields.name.value = p.name || "";
-            pFields.price.value = processedP.price || 0;
+            pFields.price.value = processedP.price || 0; // Use clean numeric price for input
             pFields.stock.value = processedP.stock || 0;
             pFields.categoryName.value = p.category || "";
             pFields.imageUrl.value = p.imageUrl || "";
             pFields.desc.value = p.description || "";
 
-            // Simulate click on the products tab to show the form correctly
-            document.querySelector('[data-tab="products"]').click(); 
+            document.querySelector('[data-tab="products"]').click();
+            loadProducts(); 
         }
         if (e.target.classList.contains("del")) {
             if (!confirm("Delete product?")) return;
@@ -246,12 +221,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Search Input Event Listener 
+    // 🟢 Search Input Event Listener 
     if (productSearchInput) {
         productSearchInput.addEventListener('keyup', loadProducts);
     }
 
-    // Categories functions
+    // ---------- CATEGORIES ----------
+    const cTbody = document.querySelector("#categoriesTable tbody");
     async function loadCategories() {
         cTbody.innerHTML = '<tr><td colspan="1" style="text-align:center; padding: 20px;">Loading categories...</td></tr>';
 
@@ -270,7 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCategories();
     });
 
-    // Orders functions
+    // ---------- ORDERS ----------
+    const oTbody = document.querySelector("#ordersTable tbody");
+
     const createStatusButtons = (orderId, currentStatus) => {
         const statuses = ["Processing", "Shipped", "Delivered"];
         const html = statuses.map(status => {
@@ -318,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join("");
     }
 
-    // Handle status button clicks (must be inside the scope)
+    // 🎯 EVENT LISTENER: Handle status button clicks (must be inside the scope)
     oTbody.addEventListener("click", async (e) => {
         if (e.target.classList.contains("status-update")) {
             const id = e.target.dataset.id;
@@ -348,29 +326,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // ---------------------------------
-    // --- INITIAL LOAD ---
-    // ---------------------------------
-
-    // Initial check to hide all non-active tabs and load data for the active one (Products)
-    const initialActiveTabLink = document.querySelector('.tablink.active');
-    if (initialActiveTabLink) {
-        const initialTabId = initialActiveTabLink.dataset.tab;
-        
-        // Hide all
-        Object.values(tabs).forEach(el => el.classList.add("hidden"));
-        
-        // Show the active one
-        if (tabs[initialTabId]) {
-             tabs[initialTabId].classList.remove("hidden");
-        }
-        
-        // Load data
-        if (initialTabId === 'products') loadProducts();
-        else if (initialTabId === 'categories') loadCategories();
-        else if (initialTabId === 'orders') loadOrders();
-    } else {
-        // Fallback: load products if no tab is active
-        loadProducts();
-    }
-});
+    // initial loads (Run these once to populate the dashboard)
+    loadProducts();
+    loadCategories();
+    loadOrders();
+})();
