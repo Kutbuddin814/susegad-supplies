@@ -188,6 +188,9 @@ export default function shopRoutes(db) {
                 return res.status(400).json({ message: 'Missing user email or address data.' });
             }
 
+            // NOTE: This currently uses $set: { addresses: [newAddress] } which OVERWRITES 
+            // the entire addresses array with ONE new address. It should use $push to append 
+            // if you intend to store multiple addresses.
             const result = await db.collection("users").updateOne(
                 { email: userEmail },
                 { $set: { addresses: [newAddress] } } 
