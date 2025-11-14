@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const RENDER_API_URL = "https://susegad-supplies-04xz.onrender.com";
 
     // Define the live hostname of your Vercel Admin page
-    const VERCEL_ADMIN_HOST = "https://susegad-supplies-pdtj.vercel.app";
+    const VERCEL_ADMIN_HOST = "https://susegad-supplies-admin.onrender.com";
 
     const hostname = window.location.hostname;
 
