@@ -1,155 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-   
-  <meta charset="UTF-8" />
-   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Susegad Admin</title>
-     
-  <link rel="stylesheet" href="admin.css" />
-  <style>
-    .toast-container {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-    }
-
-    .toast {
-      visibility: hidden;
-      min-width: 250px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 2px;
-      padding: 16px;
-      margin-bottom: 10px;
-      opacity: 0;
-      transition: opacity 0.3s, visibility 0.3s;
-    }
-
-    .toast.show {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    .toast.error {
-      background-color: #dc3545;
-    }
-
-    .toast.success {
-      background-color: #28a745;
-    }
-  </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Susegad Admin</title>
+    <link rel="stylesheet" href="admin.css"/> 
 </head>
-
 <body>
-    <div class="topbar">
-        <div class="brand">Susegad <span>Admin</span></div>
-        <div class="spacer"></div>
-        <button id="logoutBtn" class="btn">Logout</button>
-      </div>
+  <div class="topbar">
+    <div class="brand">Susegad <span>Admin</span></div>
+    <div class="spacer"></div>
+    <button id="logoutBtn" class="btn">Logout</button>
+  </div>
 
-    <div class="shell">
-        <aside class="sidebar">
-            <button class="tablink active" data-tab="products">Products</button>
-            <button class="tablink" data-tab="categories">Categories</button>
-            <button class="tablink" data-tab="orders">Orders</button>
-          </aside>
+  <div class="shell">
+    <aside class="sidebar">
+      <button class="tablink active" data-tab="products">Products</button>
+      <button class="tablink" data-tab="categories">Categories</button>
+      <button class="tablink" data-tab="orders">Orders</button>
+    </aside>
 
-        <main class="content">
-                  <section id="tab-products-content" class="card tab-content-area">
-                <div class="card-header">
-                    <h3>Products</h3>
-                  </div>
-
-                <div class="card">
-                    <h4>Add / Edit Product</h4>
-                    <div class="grid">
-                        <input id="p_id" type="hidden" />
-                        <input id="p_name" placeholder="Product name" />
-                        <input id="p_price" placeholder="Price" type="number" step="0.01" />
-                        <input id="p_stock" placeholder="Stock" type="number" />
-                        <input id="p_categoryName" placeholder="Category name (text)" />
-                        <input id="p_imageUrl" placeholder="Image URL (or leave empty)" />
-                        <textarea id="p_desc" placeholder="Description"></textarea>
-                      </div>
-                    <div class="row">
-                        <button id="saveProduct" class="btn primary">Save Product</button>
-                        <button id="resetProduct" class="btn ghost">Reset</button>
-                      </div>
-                  </div>
-               
-                <div class="card" style="padding: 10px 16px;">
-                      <div class="row">
-                            <input type="text" id="productSearch" placeholder="Search products by name..."
-              style="width: 100%; margin: 0;">
-                        </div>
-                  </div>
-
-                <div class="tablewrap">
-                    <table class="table" id="productsTable">
-                        <thead>
-                            <tr>
-                                <th>Image</th>
-                <th>Name</th>
-                <th>Category</th>
-                                <th>Price</th>
-                <th>Stock</th>
-                <th>Actions</th>
-                             
-              </tr>
-                          </thead>
-                        <tbody></tbody>
-                      </table>
-                  </div>
-              </section>
-
-                  <section id="tab-categories-content" class="card hidden tab-content-area">
-                <div class="card-header">
-          <h3>Categories</h3>
+    <main class="content">
+      <!-- PRODUCTS -->
+      <section id="tab-products" class="card">
+        <div class="card-header">
+          <h3>Products</h3>
         </div>
-                <div class="row" style="margin-bottom:10px">
-                    <input id="c_name" placeholder="New category name" />
-                    <button id="addCategory" class="btn primary">Add Category</button>
-                  </div>
-                <div class="tablewrap">
-                    <table class="table" id="categoriesTable">
-                        <thead>
+
+        <div class="card">
+          <h4>Add / Edit Product</h4>
+          <div class="grid">
+            <input id="p_id" type="hidden"/>
+            <input id="p_name" placeholder="Product name"/>
+            <input id="p_price" placeholder="Price" type="number" step="0.01"/>
+            <input id="p_stock" placeholder="Stock" type="number"/>
+            <input id="p_categoryName" placeholder="Category name (text)"/>
+            <input id="p_imageUrl" placeholder="Image URL (or leave empty)"/>
+            <textarea id="p_desc" placeholder="Description"></textarea>
+          </div>
+          <div class="row">
+            <button id="saveProduct" class="btn primary">Save Product</button>
+            <button id="resetProduct" class="btn ghost">Reset</button>
+          </div>
+        </div>
+        
+        <div class="card" style="padding: 10px 16px;">
+            <div class="row">
+                <input type="text" id="productSearch" placeholder="Search products by name..." style="width: 100%; margin: 0;">
+            </div>
+        </div>
+
+        <div class="tablewrap">
+          <table class="table" id="productsTable">
+            <thead>
               <tr>
-                <th>Name</th>
+                <th>Image</th><th>Name</th><th>Category</th>
+                <th>Price</th><th>Stock</th><th>Actions</th>
               </tr>
             </thead>
-                        <tbody></tbody>
-                      </table>
-                  </div>
-              </section>
-
-                  <section id="tab-orders-content" class="card hidden tab-content-area">
-                <div class="card-header">
-          <h3>Orders</h3>
+            <tbody></tbody>
+          </table>
         </div>
-                <div class="tablewrap">
-                    <table class="table" id="ordersTable">
-                        <thead>
-                            <tr>
-                <th>#</th>
-                            <th>Name</th>          <th>Email</th>
-                            <th>Items</th>         <th>Total</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-              </tr>
-                          </thead>
-                        <tbody></tbody>
-                      </table>
-                  </div>
-              </section>
-          </main>
-      </div>
-  <div id="toast-container" class="toast-container"></div>
-  <script src="admin.js"></script>
-</body>
+      </section>
 
+      <!-- CATEGORIES -->
+      <section id="tab-categories" class="card hidden">
+        <div class="card-header"><h3>Categories</h3></div>
+        <div class="row" style="margin-bottom:10px">
+          <input id="c_name" placeholder="New category name"/>
+          <button id="addCategory" class="btn primary">Add Category</button>
+        </div>
+        <div class="tablewrap">
+          <table class="table" id="categoriesTable">
+            <thead><tr><th>Name</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ORDERS -->
+      <section id="tab-orders" class="card hidden">
+        <div class="card-header"><h3>Orders</h3></div>
+        <div class="tablewrap">
+          <table class="table" id="ordersTable">
+            <thead>
+              <tr><th>#</th>
+            <th>Name</th>          <th>Email</th>
+            <th>Items</th>         <th>Total</th>
+            <th>Status</th>
+            <th>Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+<script src="admin.js"></script> 
+</body>
 </html>
