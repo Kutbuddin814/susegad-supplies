@@ -5,8 +5,9 @@ export const useAppContext = () => useContext(AppContext);
 
 // Helper function to safely read environment variables (resolves compiler warnings)
 const getApiUrl = () => {
-  if (typeof import.meta !== 'undefined' && import.meta.env.VITE_API_BASE_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_BASE_URL;
+  if (typeof import.meta !== 'undefined' && import.meta.env.VITE_API_BASE_URL) {
+    // NOTE: Corrected variable name from VITE_API_BASE_BASE_URL to VITE_API_BASE_URL (standard)
+    return import.meta.env.VITE_API_BASE_URL; 
   }
   return "https://susegad-supplies-04xz.onrender.com";
 };
@@ -44,7 +45,7 @@ export const AppProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ---------- UI helpers (Kept as primary definition) ----------
+  // ---------- UI helpers (PRIMARY DEFINITION) ----------
   const showToast = (message, type = "success") => {
     const event = new CustomEvent("showtoast", { detail: { message, type } });
     window.dispatchEvent(event);
@@ -282,11 +283,8 @@ export const AppProvider = ({ children }) => {
         }
     };
     
-  // ---------- UI helpers ----------
-  const showToast = (message, type = "success") => {
-    const event = new CustomEvent("showtoast", { detail: { message, type } });
-    window.dispatchEvent(event);
-  };
+  // ---------- UI helpers (Removed duplicate definition) ----------
+  
 
   const value = {
     API_URL,
