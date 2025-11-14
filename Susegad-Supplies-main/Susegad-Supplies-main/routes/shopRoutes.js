@@ -6,7 +6,7 @@ const router = express.Router();
 
 export default function shopRoutes(db) {
 
-    // 1. ✅ PRODUCT SUGGESTIONS (MUST be before :id route)
+    // 1. ✅ PRODUCT SUGGESTIONS
     router.get("/products/suggestions", async (req, res) => {
         try {
             const q = req.query.q?.trim();
@@ -161,25 +161,20 @@ export default function shopRoutes(db) {
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
+            
+            // 🛑 FIX: Return the entire addresses array
+            const addresses = user.addresses && Array.isArray(user.addresses)
+                ? user.addresses
+                : []; 
 
-            const address = user.addresses && user.addresses.length > 0
-                ? user.addresses[0]
-                : {
-                    fullName: user.name || "",
-                    street: "vaidem",
-                    city: "Madgaon",
-                    pincode: "443433",
-                    country: "India"
-                };
-
-            res.json({ message: "Address retrieved", address });
+            res.json({ message: "Addresses retrieved", addresses });
         } catch (err) {
             console.error("User address error:", err);
             res.status(500).json({ message: "Failed to load address" });
         }
     });
 
-    // ✅ POST /shop/user/address 
+    // ✅ POST /shop/user/address (ADD NEW ADDRESS - FIXED TO PUSH)
     router.post("/user/address", async (req, res) => {
         try {
             const { userEmail, newAddress } = req.body;
@@ -188,12 +183,10 @@ export default function shopRoutes(db) {
                 return res.status(400).json({ message: 'Missing user email or address data.' });
             }
 
-            // NOTE: This currently uses $set: { addresses: [newAddress] } which OVERWRITES 
-            // the entire addresses array with ONE new address. It should use $push to append 
-            // if you intend to store multiple addresses.
+            // 🛑 CRITICAL FIX: Use $push to ADD new address and assign a unique _id
             const result = await db.collection("users").updateOne(
                 { email: userEmail },
-                { $set: { addresses: [newAddress] } } 
+                { $push: { addresses: { _id: new ObjectId(), ...newAddress } } } 
             );
 
             if (result.matchedCount === 0) {
@@ -208,6 +201,73 @@ export default function shopRoutes(db) {
         } catch (error) {
             console.error("Failed to save address:", error);
             res.status(500).json({ message: 'Internal server error while saving address.' });
+        }
+    });
+
+    // ⚠️ FIXED: DELETE /shop/user/address/:email/:addressId
+    router.delete("/user/address/:email/:addressId", async (req, res) => {
+        try {
+            const { email, addressId } = req.params;
+
+            // 🛑 CRITICAL FIX: Determine query based on ID validity
+            let pullQuery;
+            
+            // Try to delete by ObjectId (for correct/new addresses)
+            if (ObjectId.isValid(addressId)) {
+                pullQuery = { _id: new ObjectId(addressId) };
+            } else {
+                // Fallback: Delete by raw string ID (for old, corrupted addresses)
+                pullQuery = { _id: addressId }; 
+            }
+
+            // Use $pull to remove the item from the addresses array
+            const result = await db.collection("users").updateOne(
+                { email },
+                { $pull: { addresses: pullQuery } }
+            );
+
+            if (result.modifiedCount === 0) {
+                return res.status(404).json({ message: "Address not found for this user." });
+            }
+
+            res.status(200).json({ message: "Address deleted successfully." });
+        } catch (error) {
+            console.error("Failed to delete address:", error);
+            res.status(500).json({ message: 'Internal server error while deleting address.' });
+        }
+    });
+    
+    // ⚠️ FIXED: PUT /shop/user/address/:email/:addressId
+    router.put("/user/address/:email/:addressId", async (req, res) => {
+        try {
+            const { email, addressId } = req.params;
+            const { updatedAddress } = req.body; 
+
+            if (!ObjectId.isValid(addressId) || !updatedAddress) {
+                return res.status(400).json({ message: "Invalid ID or missing update data." });
+            }
+            
+            // 🛑 CRITICAL FIX: Use positional operator ($) to update the fields of the specific element
+            const result = await db.collection("users").updateOne(
+                { email, "addresses._id": new ObjectId(addressId) }, // Match user AND array element ID
+                { $set: { 
+                    "addresses.$.fullName": updatedAddress.fullName,
+                    "addresses.$.street": updatedAddress.street,
+                    "addresses.$.city": updatedAddress.city,
+                    "addresses.$.pincode": updatedAddress.pincode,
+                    "addresses.$.country": updatedAddress.country,
+                 } }
+            );
+
+            if (result.matchedCount === 0) {
+                return res.status(404).json({ message: "Address not found for update." });
+            }
+
+            res.status(200).json({ message: "Address updated successfully." });
+
+        } catch (error) {
+            console.error("Failed to update address:", error);
+            res.status(500).json({ message: 'Internal server error while updating address.' });
         }
     });
 
