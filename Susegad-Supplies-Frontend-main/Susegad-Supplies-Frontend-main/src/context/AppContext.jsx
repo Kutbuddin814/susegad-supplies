@@ -5,8 +5,8 @@ export const useAppContext = () => useContext(AppContext);
 
 // Helper function to safely read environment variables (resolves compiler warnings)
 const getApiUrl = () => {
-  if (typeof import.meta !== 'undefined' && import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
+  if (typeof import.meta !== 'undefined' && import.meta.env.VITE_API_BASE_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_BASE_URL;
   }
   return "https://susegad-supplies-04xz.onrender.com";
 };
@@ -44,12 +44,12 @@ export const AppProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ---------- UI helpers ----------
+  // ---------- UI helpers (Kept as primary definition) ----------
   const showToast = (message, type = "success") => {
     const event = new CustomEvent("showtoast", { detail: { message, type } });
     window.dispatchEvent(event);
   };
-    
+    
   // ---------- Initial loads ----------
   useEffect(() => {
     (async () => {
@@ -227,65 +227,61 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-    // -----------------------------------------------------------
-    // ---------- NEW ADDRESS MANAGEMENT FUNCTIONS ----------
-    // -----------------------------------------------------------
+    // -----------------------------------------------------------
+    // ---------- ADDRESS MANAGEMENT FUNCTIONS ----------
+    // -----------------------------------------------------------
+    
+    // New Function 1: Saves a new address (used by 'Add New Address')
+    const saveAddress = async (addressData) => {
+        if (!user?.email) return false;
+        try {
+            const data = await jsonFetch(`${API_URL}/shop/user/address`, {
+                method: "POST", 
+                body: JSON.stringify({ userEmail: user.email, newAddress: addressData }),
+            });
+            showToast("Address saved!", "success");
+            return data;
+        } catch (err) {
+            showToast(err.message || "Failed to save address", "error");
+            return false;
+        }
+    };
 
-    // Helper to get addresses (assuming a dedicated fetch function is available in ProfilePage)
-    // Note: This relies on the ProfilePage fetching the full user/address list
-    
-    // New Function 1: Saves a new address (used by 'Add New Address')
-    const saveAddress = async (addressData) => {
-        if (!user?.email) return false;
-        try {
-            // Assumes backend uses POST /shop/user/address to ADD a new address
-            const data = await jsonFetch(`${API_URL}/shop/user/address`, {
-                method: "POST", 
-                body: JSON.stringify({ userEmail: user.email, newAddress: addressData }),
-            });
-            showToast("Address saved!", "success");
-            return data;
-        } catch (err) {
-            showToast(err.message || "Failed to save address", "error");
-            return false;
-        }
-    };
+    // New Function 2: Deletes a specific address
+    const deleteAddress = async (addressId) => {
+        if (!user?.email || !addressId) return false;
+        try {
+            // URL format must match backend DELETE /shop/user/address/:email/:addressId
+            const url = `${API_URL}/shop/user/address/${encodeURIComponent(user.email)}/${encodeURIComponent(addressId)}`;
+            await jsonFetch(url, { method: "DELETE" });
+            
+            showToast("Address deleted successfully", "success");
+            return true;
+        } catch (err) {
+            showToast(err.message || "Failed to delete address", "error");
+            return false;
+        }
+    };
 
-    // New Function 2: Deletes a specific address
-    const deleteAddress = async (addressId) => {
-        if (!user?.email || !addressId) return false;
-        try {
-            // URL format must match backend DELETE /shop/user/address/:email/:addressId
-            const url = `${API_URL}/shop/user/address/${encodeURIComponent(user.email)}/${encodeURIComponent(addressId)}`;
-            await jsonFetch(url, { method: "DELETE" });
-            
-            showToast("Address deleted successfully", "success");
-            return true;
-        } catch (err) {
-            showToast(err.message || "Failed to delete address", "error");
-            return false;
-        }
-    };
-
-    // New Function 3: Updates an existing address (used by 'Edit')
-    const updateAddress = async (addressData) => {
-        if (!user?.email || !addressData._id) return false;
-        try {
-            // Assuming backend uses PUT /shop/user/address/:email/:addressId
-            const url = `${API_URL}/shop/user/address/${encodeURIComponent(user.email)}/${encodeURIComponent(addressData._id)}`;
-            await jsonFetch(url, { 
-                method: "PUT",
-                body: JSON.stringify({ updatedAddress: addressData })
-            });
-            
-            showToast("Address updated!", "success");
-            return true;
-        } catch (err) {
-            showToast(err.message || "Failed to update address", "error");
-            return false;
-        }
-    };
-    
+    // New Function 3: Updates an existing address (used by 'Edit')
+    const updateAddress = async (addressData) => {
+        if (!user?.email || !addressData._id) return false;
+        try {
+            // Assuming backend uses PUT /shop/user/address/:email/:addressId
+            const url = `${API_URL}/shop/user/address/${encodeURIComponent(user.email)}/${encodeURIComponent(addressData._id)}`;
+            await jsonFetch(url, { 
+                method: "PUT",
+                body: JSON.stringify({ updatedAddress: addressData })
+            });
+            
+            showToast("Address updated!", "success");
+            return true;
+        } catch (err) {
+            showToast(err.message || "Failed to update address", "error");
+            return false;
+        }
+    };
+    
   // ---------- UI helpers ----------
   const showToast = (message, type = "success") => {
     const event = new CustomEvent("showtoast", { detail: { message, type } });
@@ -310,10 +306,10 @@ export const AppProvider = ({ children }) => {
     checkout,
     setCart,
     showToast,
-    // EXPOSE NEW ADDRESS FUNCTIONS
-    saveAddress,
-    deleteAddress,
-    updateAddress,
+    // EXPOSE NEW ADDRESS FUNCTIONS
+    saveAddress,
+    deleteAddress,
+    updateAddress,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
