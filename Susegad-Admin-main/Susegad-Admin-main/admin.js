@@ -271,43 +271,41 @@
 
 
     async function loadOrders() {
-        oTbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">Loading orders...</td></tr>';
+    oTbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">Loading orders...</td></tr>';
 
-        try {
-            const res = await fetch(`${API}/admin/orders`);
-            const items = await res.json();
+    const res = await fetch(`${API}/admin/orders`);
+    const items = await res.json();
 
-            oTbody.innerHTML = items.map((o, idx) => {
-                const orderId = o._id;
-                const currentStatus = o.status || "Processing";
+    // 🔥 FILTER OUT UNWANTED TEST PRODUCTS
+    const filteredOrders = items.filter(order =>
+        !order.items?.some(item =>
+            ["Fresh Tomato", "Red Apple", "Cashew Nuts"].includes(item.name)
+        )
+    );
 
-                // 🔥 SAFE FIX HERE (NO MORE CRASH)
-                const safeEmail = o.userEmail || o.email || "";
-                const customerName =
-                    o.shippingAddress?.fullName ||
-                    (safeEmail ? safeEmail.split('@')[0] : "Guest");
+    oTbody.innerHTML = filteredOrders.map((o, idx) => {
+        const orderId = o._id;
+        const currentStatus = o.status || "Processing";
+        const safeEmail = o.userEmail || o.email || "";
+        const customerName =
+            o.shippingAddress?.fullName ||
+            (safeEmail ? safeEmail.split('@')[0] : "Guest");
 
-                return `
-                <tr>
-                    <td>${idx + 1}</td>
-                    <td>${customerName}</td>
-                    <td>${safeEmail || "-"}</td>
-                    <td>${getProductSummary(o.items)}</td>
-                    <td>${formatPrice(o.totalAmount || o.total || 0)}</td>
-                    <td>${currentStatus}</td> 
-                    <td class="order-actions-col">
-                        ${createStatusButtons(orderId, currentStatus)}
-                    </td>
-                </tr>
-                `;
-            }).join("");
-
-        } catch (error) {
-            console.error("Failed to load orders:", error);
-            oTbody.innerHTML =
-                '<tr><td colspan="7" style="text-align:center; padding: 20px; color:red;">Failed to load orders.</td></tr>';
-        }
-    }
+        return `
+        <tr>
+            <td>${idx + 1}</td>
+            <td>${customerName}</td>
+            <td>${safeEmail || "-"}</td>
+            <td>${getProductSummary(o.items)}</td>
+            <td>${formatPrice(o.totalAmount || o.total || 0)}</td>
+            <td>${currentStatus}</td> 
+            <td class="order-actions-col">
+                ${createStatusButtons(orderId, currentStatus)}
+            </td>
+        </tr>
+        `;
+    }).join("");
+}
 
     // 🎯 EVENT LISTENER: Handle status button clicks (must be inside the scope)
     oTbody.addEventListener("click", async (e) => {
